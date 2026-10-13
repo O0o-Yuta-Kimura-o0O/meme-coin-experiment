@@ -7,9 +7,11 @@
 
 ## コイン一覧
 
-| コイン | ティッカー | 状態 | フォルダ |
-|---|---|---|---|
-| SEPPUKU | $SEPPUKU | 準備中 | [coins/seppuku](coins/seppuku) |
+| コイン | ティッカー | 発行枚数 | 配分（流動性 / チーム / コミュニティ） | 半減期（クリフ / 間隔 / 回数） | 状態 | フォルダ |
+|---|---|---|---|---|---|---|
+| SEPPUKU | $SEPPUKU | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 準備中 | [coins/seppuku](coins/seppuku) |
+
+仕様の違い（発行枚数・配分・半減期）は、すべて各コインの `coin.env` で設定します。コントラクトのコードは全コイン共通です。
 
 ## 共通仕様（PEPE 型 + ビットコイン風の半減期）
 
@@ -57,7 +59,7 @@ research/                 研究の設計、データ、分析
 cp -R coins/_template coins/新しいコイン名
 ```
 
-`coin.env` の `TOKEN_NAME` と `TOKEN_SYMBOL`、ウォレット、`README.md` のストーリーを書き換えます。比較実験のため、配分と半減期の値はほかのコインとそろえておきます。
+`coin.env` の `TOKEN_NAME` と `TOKEN_SYMBOL`、ウォレット、`README.md` のストーリーを書き換えます。比較したい要素以外の値は、ほかのコインとそろえておきます（[research/README.md](research/README.md) の「実験の軸」を参照）。
 
 ## 手順
 
