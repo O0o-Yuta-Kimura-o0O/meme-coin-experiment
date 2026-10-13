@@ -70,7 +70,7 @@
       lang_label: "言語",
       nav_story: "物語", nav_defs: "定義", nav_halving: "半減期", nav_acquire: "入手方法",
       eyebrow: "Base 上のコンセプチュアル・ミームコイン（暗号通貨）",
-      cta_buy: "入手する — 準備中", cta_buy_live: "Uniswap で入手する", cta_story: "物語を読む",
+      cta_buy: "コインを入手する — 準備中", cta_buy_live: "Uniswap でコインを入手する", cta_story: "物語を読む",
       ca_label: "コントラクト", ca_none: "未デプロイ", copy: "コピー", copied: "コピーしました",
       lead: "三十年、彼はひとつの予想とともに生きてきた。",
       p1: "その隅々まで知り尽くしていた。失敗したアプローチには、旧友のように名前をつけていた。そしてある静かな朝、一台の機械が証明を公開した。十一ページ。正しかった。そして、認めざるを得ないほどエレガントだった。",
