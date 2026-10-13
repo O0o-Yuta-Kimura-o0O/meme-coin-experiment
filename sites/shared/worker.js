@@ -2,6 +2,8 @@
 //   /x/s.js     閲覧解析スクリプト（tracker.client.js）を配信
 //   /x/e        閲覧イベントを受け取って D1 に保存
 //   /x/export   研究用にイベントを書き出す（EXPORT_TOKEN が必要。GitHub Actions が使う）
+//   NOINDEX=true のとき（プレビュー版）: 全応答に X-Robots-Tag を付け、/robots.txt で全拒否
+//   PREVIEW_PASSWORD があるとき: 合言葉（Basic 認証）を求める
 //   それ以外    public/ の静的ファイルを配信。HTML には、閲覧者の国（data-country）と、
 //               開発中の固定言語（data-force-lang。FORCE_LANG が設定されているときだけ）を埋め込む
 //
@@ -16,34 +18,71 @@ const EVENT_TYPES = new Set(["view", "click", "scroll", "hidden", "visible", "le
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-    switch (url.pathname) {
-      case "/x/s.js":
-        return new Response(trackerSource, {
-          headers: { "content-type": "text/javascript; charset=utf-8", "cache-control": "public, max-age=3600" },
-        });
-      case "/x/e":
-        return collect(request, env);
-      case "/x/export":
-        return exportEvents(request, env, url);
-      default:
-        return withLangHints(await env.ASSETS.fetch(request), request, env);
-    }
+    const response = await route(request, env);
+    if (env.NOINDEX !== "true") return response;
+    // プレビュー版：検索エンジンに載せない
+    const res = new Response(response.body, response);
+    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return res;
   },
 };
+
+async function route(request, env) {
+  const url = new URL(request.url);
+  if (env.PREVIEW_PASSWORD && !(await passwordOk(request, env.PREVIEW_PASSWORD))) {
+    return new Response("Password required", {
+      status: 401,
+      headers: { "WWW-Authenticate": 'Basic realm="Preview", charset="UTF-8"' },
+    });
+  }
+  if (env.NOINDEX === "true" && url.pathname === "/robots.txt") {
+    return new Response("User-agent: *\nDisallow: /\n", { headers: { "content-type": "text/plain" } });
+  }
+  switch (url.pathname) {
+    case "/x/s.js":
+      return new Response(trackerSource, {
+        headers: { "content-type": "text/javascript; charset=utf-8", "cache-control": "public, max-age=3600" },
+      });
+    case "/x/e":
+      return collect(request, env);
+    case "/x/export":
+      return exportEvents(request, env, url);
+    default:
+      return withLangHints(await env.ASSETS.fetch(request), request, env);
+  }
+}
+
+// 合言葉（任意）：ユーザー名は何でもよく、パスワード欄に PREVIEW_PASSWORD を入れる
+async function passwordOk(request, password) {
+  const header = request.headers.get("Authorization") || "";
+  if (!header.startsWith("Basic ")) return false;
+  let decoded = "";
+  try {
+    decoded = atob(header.slice(6));
+  } catch {
+    return false;
+  }
+  return safeEqual(decoded.slice(decoded.indexOf(":") + 1), password);
+}
 
 // 言語の自動選択に使うヒントを <html> に埋め込む（ページを開いた後の言語の切り替わり＝ちらつきを防ぐため）
 function withLangHints(response, request, env) {
   if (!(response.headers.get("content-type") || "").includes("text/html")) return response;
   const country = request.cf?.country;
-  return new HTMLRewriter()
-    .on("html", {
+  const rewriter = new HTMLRewriter().on("html", {
+    element(el) {
+      if (country) el.setAttribute("data-country", country);
+      if (env.FORCE_LANG) el.setAttribute("data-force-lang", env.FORCE_LANG);
+    },
+  });
+  if (env.NOINDEX === "true") {
+    rewriter.on("head", {
       element(el) {
-        if (country) el.setAttribute("data-country", country);
-        if (env.FORCE_LANG) el.setAttribute("data-force-lang", env.FORCE_LANG);
+        el.prepend('<meta name="robots" content="noindex, nofollow, noarchive">', { html: true });
       },
-    })
-    .transform(response);
+    });
+  }
+  return rewriter.transform(response);
 }
 
 async function collect(request, env) {

@@ -18,14 +18,45 @@
     "FORCE_LANG": "ja"
   },
   // 全コインのサイトで1つのデータベースを共有する（site 列で区別）
-  // database_id は `npx wrangler d1 create meme-analytics` の出力で置き換える
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "meme-analytics",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "881aa04d-15fb-499d-9ad0-8b835361a48b",
       "migrations_dir": "../migrations"
     }
   ],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+
+  // ---------- プレビュー版（友だちに見てもらう用） ----------
+  // npm run deploy:seppuku-preview で公開。本番とは別の Worker（seppuku-preview）になる。
+  // vars と d1_databases は環境ごとに書く必要がある（本番の設定は引き継がれない）。
+  "env": {
+    "preview": {
+      "name": "seppuku-preview",
+      "assets": {
+        "directory": "./public",
+        "binding": "ASSETS",
+        // すべてのリクエストを Worker に通し、検索エンジン避けのヘッダーを付ける
+        "run_worker_first": true,
+        "not_found_handling": "404-page"
+      },
+      "vars": {
+        // 閲覧データは本番と分けて記録する（site 列が seppuku-preview になる）
+        "SITE": "seppuku-preview",
+        // 検索エンジンに載せない（X-Robots-Tag、meta robots、robots.txt）
+        "NOINDEX": "true"
+        // 日本語固定（FORCE_LANG）は付けない：国に合わせた言語の自動選択を確認するため
+        // 合言葉をかけたいときは `npx wrangler secret put PREVIEW_PASSWORD --env preview --config seppuku/wrangler.jsonc`
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "meme-analytics",
+          "database_id": "881aa04d-15fb-499d-9ad0-8b835361a48b",
+          "migrations_dir": "../migrations"
+        }
+      ]
+    }
+  }
 }

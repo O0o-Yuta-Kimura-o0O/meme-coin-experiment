@@ -103,6 +103,25 @@ cd sites && npm run deploy:seppuku
 
 **注意**：`IP_HASH_KEY` を後から変えると、それ以前の訪問者と、同じ人として突き合わせられなくなります。一度登録したら変えないでください。複数のコインのサイトで同じ人を突き合わせたい場合は、全サイトで同じ値を登録します（そのときは、ランダムに生成した値を一時的に変数に入れ、5 と同じ要領で登録します）。
 
+## プレビュー版（友だちに見てもらう用）
+
+本番とは別の Worker `seppuku-preview` として公開しています：https://seppuku-preview.meme-coin-sites.workers.dev
+
+- 検索エンジンに載せない指示を、すべての応答（`X-Robots-Tag`）、HTML（`meta robots`）、`/robots.txt` に入れている
+- 日本語固定はなし（国に合わせた言語の自動選択を確認できる）
+- 閲覧データは本番と同じデータベースに、`site = seppuku-preview` として分けて記録される
+- 更新するときは、次のコマンドで上書きする
+
+```bash
+cd sites && npm run deploy:seppuku-preview
+```
+
+- 合言葉をかけたいときは、次のコマンドで登録する（開くときのユーザー名は何でもよく、パスワード欄に合言葉を入れる）。外すときは `secret delete`
+
+```bash
+cd sites && npx wrangler secret put PREVIEW_PASSWORD --config seppuku/wrangler.jsonc --env preview
+```
+
 ## 独自ドメイン
 
 ドメイン（例: seppuku.xyz）を Cloudflare で購入するか、Cloudflare に移すと、`wrangler.jsonc` に次を加えるだけで使えます。
