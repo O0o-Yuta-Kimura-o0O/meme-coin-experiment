@@ -1,15 +1,22 @@
-# SEPPUKU（$SEPPUKU）
+# meme-coin-experiment
 
-**Base**（Coinbase が運営するイーサリアムのレイヤー2）上で発行する、維持費がほぼかからない ERC-20 ミームコインです。
+**Base**（Coinbase が運営するイーサリアムのレイヤー2）上で、**仕様が同じで名前とストーリーだけが違う**ミームコインを複数発行し、市場での広がり方の違いを観察する実験プロジェクトです。
 
-このファイルでは、設計とデプロイの手順を説明します。
+- すべてのコインが同じコントラクト（`src/`）を使います。違うのは `coins/<コイン名>/` の設定とストーリーだけです
+- 研究の設計 → [research/README.md](research/README.md)
 
-## 設計（PEPE 型 + ビットコイン風の半減期）
+## コイン一覧
+
+| コイン | ティッカー | 状態 | フォルダ |
+|---|---|---|---|
+| SEPPUKU | $SEPPUKU | 準備中 | [coins/seppuku](coins/seppuku) |
+
+## 共通仕様（PEPE 型 + ビットコイン風の半減期）
 
 | 項目 | 内容 |
 |---|---|
 | 規格 | ERC-20（OpenZeppelin v5.4）+ Burnable + Permit |
-| 発行枚数 | 1,000,000,000（10億）※ `.env` で変更可。デプロイ時に全量を発行し、追加発行はできない |
+| 発行枚数 | 1,000,000,000（10億）※ `coin.env` で変更可。デプロイ時に全量を発行し、追加発行はできない |
 | 管理者権限 | **なし**（オーナーなし、mint なし、一時停止なし、ブラックリストなし、売買税なし） |
 | 配分 | 流動性（DEX）90% / チーム 5% / コミュニティ・エアドロップ 5% |
 | 半減期 | チーム分は `HalvingVesting` でロック。クリフ（90日）明けに 50%、その後 180 日ごとに残りの半分ずつ解放され、8 回目で全量解放 |
@@ -29,12 +36,28 @@
 ## ファイル構成
 
 ```
-src/MemeToken.sol        トークン本体（約20行。シンプルなほど監査・信頼の面で有利）
-src/HalvingVesting.sol   半減期型のチーム分ロック
-script/Deploy.s.sol      デプロイと配分を一括で行うスクリプト
-test/MemeCoin.t.sol      テスト（5件、すべて通過）
-.env.example             設定のテンプレート
+src/MemeToken.sol         トークン本体（全コイン共通。約20行）
+src/HalvingVesting.sol    半減期型のチーム分ロック（全コイン共通）
+script/Deploy.s.sol       デプロイと配分を一括で行うスクリプト
+test/MemeCoin.t.sol       テスト
+deploy.sh                 コインを指定してデプロイするラッパー
+.env.example              全コイン共通の秘密情報（RPC、API キー）のテンプレート
+coins/
+  _template/              新しいコインを作るときのひな形
+  seppuku/
+    coin.env              名前・発行枚数・配分・ウォレット・半減期
+    README.md             コンセプト、ストーリー、リンク
+    deployments.md        デプロイ記録（アドレス、日時、初期流動性）
+research/                 研究の設計、データ、分析
 ```
+
+## 新しいコインを追加する
+
+```bash
+cp -R coins/_template coins/新しいコイン名
+```
+
+`coin.env` の `TOKEN_NAME` と `TOKEN_SYMBOL`、ウォレット、`README.md` のストーリーを書き換えます。比較実験のため、配分と半減期の値はほかのコインとそろえておきます。
 
 ## 手順
 
@@ -58,23 +81,29 @@ cast wallet import deployer --interactive
 cp .env.example .env
 ```
 
-`.env` を開いて、名前・シンボル・`TEAM_WALLET`・`COMMUNITY_WALLET` を記入します。`TEAM_WALLET` は**後から変更できません**。ハードウェアウォレットか [Safe](https://app.safe.global) のマルチシグにしてください。
+`.env` に Etherscan の API キーなどを記入します。次に `coins/<コイン名>/coin.env` を開いて、`TEAM_WALLET` と `COMMUNITY_WALLET` を記入します。`TEAM_WALLET` は**後から変更できません**。ハードウェアウォレットか [Safe](https://app.safe.global) のマルチシグにしてください。
+
+まず、ローカルで試します（何も送信しません）。
+
+```bash
+./deploy.sh seppuku dry-run
+```
 
 ### 1. テストネット（Base Sepolia）で本番と同じ手順を試す
 
 テストネット用の ETH は faucet（無料配布サイト）で入手します。
 
 ```bash
-source .env && forge script script/Deploy.s.sol --rpc-url base_sepolia --account deployer --broadcast --verify
+./deploy.sh seppuku base_sepolia
 ```
 
 ### 2. 本番（Base Mainnet）
 
 ```bash
-source .env && forge script script/Deploy.s.sol --rpc-url base --account deployer --broadcast --verify
+./deploy.sh seppuku base
 ```
 
-デプロイのガス代は通常 **1ドル未満** です。`--verify` を付けると、Basescan でソースコードが公開・検証されます（信頼を得るために必須）。
+デプロイのガス代は通常 **1ドル未満** です。Basescan でのソースコードの公開・検証まで自動で行います（信頼を得るために必須）。終わったら、表示されたアドレスを `coins/<コイン名>/deployments.md` に記録します。
 
 ### 3. DEX に流動性を追加する（ここで取引が始まる）
 

@@ -15,7 +15,7 @@ contract MemeCoinTest is Test {
     uint64 constant PERIOD = 180 days;
 
     function setUp() public {
-        token = new MemeToken("Seppuku", "SEPPUKU", SUPPLY, address(this));
+        token = new MemeToken("Test Coin", "TEST", SUPPLY, address(this));
         vesting = new HalvingVesting(token, team, uint64(block.timestamp) + CLIFF, PERIOD, 8);
         token.transfer(address(vesting), TEAM);
     }
@@ -23,7 +23,7 @@ contract MemeCoinTest is Test {
     function test_FixedSupply() public view {
         assertEq(token.totalSupply(), SUPPLY);
         assertEq(token.decimals(), 18);
-        assertEq(token.symbol(), "SEPPUKU");
+        assertEq(token.symbol(), "TEST");
     }
 
     function test_Burn() public {
