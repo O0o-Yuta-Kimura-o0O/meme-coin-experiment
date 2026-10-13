@@ -6,11 +6,17 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/x/*"],
+    // "/" と "/index.html" は Worker を通し、言語の自動選択用のヒントを HTML に埋め込む
+    "run_worker_first": ["/x/*", "/", "/index.html"],
     "not_found_handling": "404-page"
   },
   "rules": [{ "type": "Text", "globs": ["**/*.client.js"], "fallthrough": false }],
-  "vars": { "SITE": "seppuku" },
+  "vars": {
+    "SITE": "seppuku",
+    // 開発中は日本語に固定する。テスト・公開の前に、この行を消す
+    // （残したままだと npm run deploy:seppuku が止まるようにしてある）
+    "FORCE_LANG": "ja"
+  },
   // 全コインのサイトで1つのデータベースを共有する（site 列で区別）
   // database_id は `npx wrangler d1 create meme-analytics` の出力で置き換える
   "d1_databases": [

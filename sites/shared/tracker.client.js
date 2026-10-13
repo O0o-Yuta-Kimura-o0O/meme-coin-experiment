@@ -37,7 +37,7 @@
     if (u.host !== location.host) ref = u.host;
   } catch {}
   const params = new URLSearchParams(location.search);
-  const view = { lang: navigator.language, w: innerWidth };
+  const view = { lang: navigator.language, page_lang: document.documentElement.lang, w: innerWidth };
   for (const k of ["utm_source", "utm_medium", "utm_campaign", "ref"]) {
     const v = params.get(k);
     if (v) view[k] = v.slice(0, 64);

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev:seppuku": "wrangler dev --config seppuku/wrangler.jsonc",
-    "deploy:seppuku": "wrangler deploy --config seppuku/wrangler.jsonc",
+    "deploy:seppuku": "node scripts/check-release.mjs seppuku && wrangler deploy --config seppuku/wrangler.jsonc",
     "db:migrate:local": "wrangler d1 migrations apply meme-analytics --local --config seppuku/wrangler.jsonc",
     "db:migrate:remote": "wrangler d1 migrations apply meme-analytics --remote --config seppuku/wrangler.jsonc"
   },

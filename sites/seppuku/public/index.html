@@ -20,14 +20,22 @@
 <body>
   <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
+  <!--
+    多言語化: data-i18n="キー" の要素は i18n.js の辞書で中身を差し替える。
+    デザインとして使っている英語・日本語（見出し、引用、§ラベル、数式）には付けない。
+  -->
   <header class="nav">
     <a class="brand" href="#top" aria-label="SEPPUKU home"><img src="logo.svg" alt="" width="28" height="28"><span>SEPPUKU</span></a>
     <nav>
-      <a href="#story">Story</a>
-      <a href="#definitions">Definitions</a>
-      <a href="#lemma">Halving</a>
-      <a href="#buy">Acquire</a>
+      <a href="#story" data-i18n="nav_story">Story</a>
+      <a href="#definitions" data-i18n="nav_defs">Definitions</a>
+      <a href="#lemma" data-i18n="nav_halving">Halving</a>
+      <a href="#buy" data-i18n="nav_acquire">Acquire</a>
     </nav>
+    <label class="lang">
+      <span class="sr-only" data-i18n="lang_label">Language</span>
+      <select id="lang-select" data-track="lang_select"></select>
+    </label>
   </header>
 
   <main id="top">
@@ -36,82 +44,79 @@
         <img src="hero.webp" alt="A samurai in white kneels on a tatami before a folding screen of plum blossoms, attended by retainers, as petals fall." width="1672" height="941">
       </figure>
       <div class="hero-text">
-        <p class="eyebrow">$SEPPUKU &nbsp;·&nbsp; a conceptual meme coin on Base</p>
+        <p class="eyebrow" data-i18n="eyebrow">$SEPPUKU · a conceptual meme coin on Base</p>
         <h1>The proof was beautiful.<br><em>It just wasn't ours.</em></h1>
-        <p class="ja">証明は美しかった。<wbr>ただ、それは私たちの<wbr>ものではなかった。</p>
+        <p class="ja" lang="ja">証明は美しかった。<wbr>ただ、それは私たちの<wbr>ものではなかった。</p>
         <div class="cta">
-          <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外す -->
-          <a class="btn primary" href="#buy" data-track="cta_buy" aria-disabled="true">Acquire — coming soon</a>
-          <a class="btn" href="#story" data-track="cta_story">Read the story</a>
+          <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外し、data-i18n を "cta_buy_live" に -->
+          <a class="btn primary" href="#buy" data-track="cta_buy" data-i18n="cta_buy" aria-disabled="true">Acquire — coming soon</a>
+          <a class="btn" href="#story" data-track="cta_story" data-i18n="cta_story">Read the story</a>
         </div>
         <div class="ca">
-          <span class="ca-label">Contract</span>
-          <!-- ローンチ後: data-address と表示をトークンのアドレスに差し替え -->
-          <code id="ca" data-address="">Not deployed yet</code>
-          <button type="button" id="copy-ca" data-track="copy_address" disabled>Copy</button>
+          <span class="ca-label" data-i18n="ca_label">Contract</span>
+          <!-- ローンチ後: data-address にトークンのアドレスを入れ、表示も差し替えて data-i18n を外す -->
+          <code id="ca" data-address="" data-i18n="ca_none">Not deployed yet</code>
+          <button type="button" id="copy-ca" data-track="copy_address" data-i18n="copy" disabled>Copy</button>
         </div>
       </div>
     </section>
 
     <section id="story" class="section prose">
-      <p class="label">§1 &nbsp; Story <span class="ja-sub">物語</span></p>
-      <p class="lead">For thirty years, he lived with one conjecture.</p>
-      <p>He knew its every corner. He had named his failed approaches like old friends. Then, one quiet morning, a machine posted the proof. It was eleven pages long. It was correct. It was, he had to admit, elegant.</p>
-      <p>He dressed in white. He knelt on the tatami. The blade lay before him, as tradition demands.</p>
-      <p>And then he picked up the proof instead — and read it to the last line.</p>
+      <p class="label">§1 &nbsp; Story <span class="ja-sub" lang="ja">物語</span></p>
+      <p class="lead" data-i18n="lead">For thirty years, he lived with one conjecture.</p>
+      <p data-i18n="p1">He knew its every corner. He had named his failed approaches like old friends. Then, one quiet morning, a machine posted the proof. It was eleven pages long. It was correct. It was, he had to admit, elegant.</p>
+      <p data-i18n="p2">He dressed in white. He knelt on the tatami. The blade lay before him, as tradition demands.</p>
+      <p data-i18n="p3">And then he picked up the proof instead — and read it to the last line.</p>
       <blockquote>
-        <p>What is cut is pride.<br>What survives is mathematics.</p>
-        <p class="ja">切るのは、己の矜持。<wbr>生き残るのは、数学。</p>
+        <p lang="en">What is cut is pride.<br>What survives is mathematics.</p>
+        <p class="ja" lang="ja">切るのは、己の矜持。<wbr>生き残るのは、数学。</p>
       </blockquote>
-      <p>$SEPPUKU is a piece of conceptual art in the form of a meme coin. It gently satirizes the drama of being outproved by AI — not to mock mathematicians, nor to condemn AI, but to celebrate a strange and wonderful moment: theorems are falling faster than ever, and mathematics is moving forward.</p>
-      <p class="ja">$SEPPUKU は、ミームコインという形をとったコンセプチュアルアートです。AI に先を越された数学者の悲劇を客観的に、少しだけ皮肉を込めて描きます。ただしこれは、数学者への嘲笑でも AI への否定でもありません。AI によって数学が前に進むことを喜ぶ、一人のアマチュア数学者からの前向きなメッセージです。</p>
+      <p data-i18n="p4">$SEPPUKU is a piece of conceptual art in the form of a meme coin. It gently satirizes the drama of being outproved by AI — not to mock mathematicians, nor to condemn AI, but to celebrate a strange and wonderful moment: theorems are falling faster than ever, and mathematics is moving forward.</p>
     </section>
 
     <section id="definitions" class="section">
-      <p class="label">§2 &nbsp; Definitions <span class="ja-sub">定義</span></p>
+      <p class="label">§2 &nbsp; Definitions <span class="ja-sub" lang="ja">定義</span></p>
       <dl class="defs">
-        <div><dt>Definition 1 <span>(Supply)</span></dt><dd><b>1,000,000,000</b> tokens, minted once. No further mint exists.</dd></div>
-        <div><dt>Definition 2 <span>(Distribution)</span></dt><dd><b>90%</b> liquidity · <b>5%</b> team, locked by halving · <b>5%</b> community</dd></div>
-        <div><dt>Definition 3 <span>(Neutrality)</span></dt><dd><b>0%</b> tax. No owner, no pause, no blacklist. The contract cannot be changed — by anyone, including its author.</dd></div>
+        <div><dt>Definition 1 <span>(Supply)</span></dt><dd data-i18n="def1"><b>1,000,000,000</b> tokens, minted once. No further mint exists.</dd></div>
+        <div><dt>Definition 2 <span>(Distribution)</span></dt><dd data-i18n="def2"><b>90%</b> liquidity · <b>5%</b> team, locked by halving · <b>5%</b> community</dd></div>
+        <div><dt>Definition 3 <span>(Neutrality)</span></dt><dd data-i18n="def3"><b>0%</b> tax. No owner, no pause, no blacklist. The contract cannot be changed — by anyone, including its author.</dd></div>
       </dl>
     </section>
 
     <section id="lemma" class="section">
-      <p class="label">§3 &nbsp; Lemma <span class="ja-sub">半減期</span></p>
-      <p class="statement"><b>Lemma (Halving).</b> Let <i>T</i> be the team allocation. After the <i>n</i>-th halving, the unlocked amount is</p>
+      <p class="label">§3 &nbsp; Lemma <span class="ja-sub" lang="ja">半減期</span></p>
+      <p class="statement"><b>Lemma (Halving).</b> <span data-i18n="lemma">Let <i>T</i> be the team allocation. After the <i>n</i>-th halving, the unlocked amount is</span></p>
       <p class="formula"><i>V</i>(<i>n</i>) = <i>T</i> · (1 − 2<sup>−<i>n</i></sup>), &nbsp; 1 ≤ <i>n</i> &lt; 8, &nbsp;&nbsp; <i>V</i>(8) = <i>T</i>.</p>
-      <p class="statement"><i>Proof.</i> Written in the contract, verifiable by anyone. The first halving comes 90 days after launch; each subsequent one, 180 days later. <span class="qed">∎</span></p>
+      <p class="statement"><i>Proof.</i> <span data-i18n="proof">Written in the contract, verifiable by anyone. The first halving comes 90 days after launch; each subsequent one, 180 days later.</span> <span class="qed">∎</span></p>
       <ol class="halving">
-        <li style="--p:50%"><span>n = 1 · day 90</span><b>50%</b></li>
-        <li style="--p:75%"><span>n = 2 · day 270</span><b>75%</b></li>
-        <li style="--p:87.5%"><span>n = 3 · day 450</span><b>87.5%</b></li>
-        <li style="--p:93.75%"><span>n = 4 · day 630</span><b>93.75%</b></li>
-        <li style="--p:96.875%"><span>n = 5 · day 810</span><b>96.9%</b></li>
-        <li style="--p:100%"><span>n = 8 · day 1350</span><b>100%</b></li>
+        <li style="--p:50%"><span>n = 1 · <span data-i18n-day="90">day 90</span></span><b>50%</b></li>
+        <li style="--p:75%"><span>n = 2 · <span data-i18n-day="270">day 270</span></span><b>75%</b></li>
+        <li style="--p:87.5%"><span>n = 3 · <span data-i18n-day="450">day 450</span></span><b>87.5%</b></li>
+        <li style="--p:93.75%"><span>n = 4 · <span data-i18n-day="630">day 630</span></span><b>93.75%</b></li>
+        <li style="--p:96.875%"><span>n = 5 · <span data-i18n-day="810">day 810</span></span><b>96.9%</b></li>
+        <li style="--p:100%"><span>n = 8 · <span data-i18n-day="1350">day 1350</span></span><b>100%</b></li>
       </ol>
     </section>
 
     <section id="buy" class="section">
-      <p class="label">§4 &nbsp; Construction <span class="ja-sub">入手方法</span></p>
+      <p class="label">§4 &nbsp; Construction <span class="ja-sub" lang="ja">入手方法</span></p>
       <ol class="steps">
-        <li><b>A wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
-        <li><b>ETH on Base.</b> Withdraw from an exchange to the Base network, or bridge from Ethereum.</li>
-        <li><b>A swap on Uniswap.</b> Paste the contract address above, and check that it matches this page. Imitations exist.</li>
+        <li data-i18n="step1"><b>A wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
+        <li data-i18n="step2"><b>ETH on Base.</b> Withdraw from an exchange to the Base network, or bridge from Ethereum.</li>
+        <li data-i18n="step3"><b>A swap on Uniswap.</b> Paste the contract address above, and check that it matches this page. Imitations exist.</li>
       </ol>
     </section>
 
     <section id="experiment" class="section">
-      <p class="label">§5 &nbsp; Experiment <span class="ja-sub">社会実験</span></p>
-      <p>$SEPPUKU is also part of an open research project on how <strong>names and stories</strong> shape meme coin markets. Sibling coins share the exact same contract and settings; only the name and story differ. Market data, social metrics and anonymized site analytics are recorded and will be published.</p>
-      <p class="ja">$SEPPUKU は、「名前とストーリーがミームコインの市場にどう影響するか」を調べる公開研究の一部でもあります。同じコントラクト・同じ設定で、名前とストーリーだけが違うコインと比較します。</p>
+      <p class="label">§5 &nbsp; Experiment <span class="ja-sub" lang="ja">社会実験</span></p>
+      <p data-i18n="experiment">$SEPPUKU is also part of an open research project on how <strong>names and stories</strong> shape meme coin markets. Sibling coins share the exact same contract and settings; only the name and story differ. Market data, social metrics and anonymized site analytics are recorded and will be published.</p>
       <!-- リポジトリ公開後: リンクを追加 -->
     </section>
 
     <section class="section remark">
-      <p class="label">Remark <span class="ja-sub">注意事項</span></p>
-      <p>$SEPPUKU is a meme coin with no intrinsic value and no expectation of financial return. There is no promise, roadmap or profit sharing, and its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
-      <p class="ja">$SEPPUKU は本質的な価値を持たないミームコインであり、利益を約束するものではありません。価格はゼロになり得ます。投資助言ではありません。失っても困らない範囲で、お住まいの地域の法令に従ってご利用ください。</p>
-      <p>If you are struggling, please talk to someone you trust or a local support line. This work is about letting go of pride — never of life.</p>
+      <p class="label">Remark <span class="ja-sub" lang="ja">注意事項</span></p>
+      <p data-i18n="remark">$SEPPUKU is a meme coin with no intrinsic value and no expectation of financial return. There is no promise, roadmap or profit sharing, and its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
+      <p data-i18n="support">If you are struggling, please talk to someone you trust or a local support line. This work is about letting go of pride — never of life.</p>
     </section>
 
     <p class="fin">∎</p>
@@ -122,9 +127,10 @@
     <a href="#" data-track="social_x">X</a>
     <a href="#" data-track="social_youtube">YouTube</a>
     <a href="#" data-track="social_instagram">Instagram</a>
-    <a href="privacy.html">Privacy</a>
+    <a href="privacy.html" data-i18n="privacy">Privacy</a>
   </footer>
 
+  <script src="i18n.js"></script>
   <script>
     const ca = document.getElementById("ca");
     const btn = document.getElementById("copy-ca");
@@ -133,8 +139,8 @@
       btn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(ca.dataset.address);
-          btn.textContent = "Copied";
-          setTimeout(() => (btn.textContent = "Copy"), 1500);
+          btn.textContent = window.skT ? skT("copied") : "Copied";
+          setTimeout(() => (btn.textContent = window.skT ? skT("copy") : "Copy"), 1500);
         } catch {}
       });
     }

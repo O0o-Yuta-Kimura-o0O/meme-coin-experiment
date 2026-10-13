@@ -10,6 +10,23 @@ seppuku/wrangler.jsonc      SEPPUKU サイトの設定
 seppuku/public/             SEPPUKU のページ（index.html、privacy.html、404.html、style.css、logo.svg）
 ```
 
+## 多言語対応
+
+`seppuku/public/i18n.js` に13言語の訳文があります（英語、日本語、簡体字中国語、繁体字中国語、韓国語、スペイン語、ポルトガル語、フランス語、ドイツ語、ロシア語、トルコ語、ベトナム語、インドネシア語）。右上のプルダウンで切り替えられ、選んだ言語はブラウザに記憶されます。
+
+**言語の決め方**（上ほど優先）
+
+1. URL の `?lang=xx`（テスト用。例: `?lang=fr`）
+2. 閲覧者がプルダウンで選んだ言語
+3. 開発中の固定言語：`wrangler.jsonc` の `FORCE_LANG`（**今は `"ja"`。テスト・公開の前に消す**）
+4. 閲覧者の国（Cloudflare が判定。テスト用に `?country=BR` などで上書きできる）。対応表にない国は英語
+5. 英語
+
+- 国の判定結果は、Worker が HTML の `<html data-country>` に埋め込むので、表示のあとで言語が切り替わる「ちらつき」は起きない
+- `FORCE_LANG` が残ったままだと、`npm run deploy:seppuku` は止まる（`scripts/check-release.mjs`）
+- 翻訳するのは `data-i18n="キー"` の付いた要素だけ。デザインとして使っている英語・日本語（見出し、引用、§ラベル、数式）は翻訳しない
+- 言語の切り替えは、閲覧イベント（`custom` / `lang_change`）としても記録される
+
 ## 記録する内容（個人情報は保存しない）
 
 | 記録する | 記録しない |
@@ -74,7 +91,9 @@ cd sites && openssl rand -hex 32 | npx wrangler secret put PUBLISH_HASH_KEY --co
 cd sites && T=$(openssl rand -hex 32) && printf %s "$T" | npx wrangler secret put EXPORT_TOKEN --config seppuku/wrangler.jsonc && printf %s "$T" | gh secret set SITE_EXPORT_TOKEN && unset T
 ```
 
-6. 公開する
+6. `seppuku/wrangler.jsonc` の `"FORCE_LANG": "ja"` の行を消す（開発中の日本語固定を外す）
+
+7. 公開する（公開前のチェックが自動で走り、設定が残っていれば止まる）
 
 ```bash
 cd sites && npm run deploy:seppuku

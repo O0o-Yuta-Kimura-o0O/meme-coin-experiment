@@ -2,7 +2,8 @@
 //   /x/s.js     閲覧解析スクリプト（tracker.client.js）を配信
 //   /x/e        閲覧イベントを受け取って D1 に保存
 //   /x/export   研究用にイベントを書き出す（EXPORT_TOKEN が必要。GitHub Actions が使う）
-//   それ以外    public/ の静的ファイルを配信
+//   それ以外    public/ の静的ファイルを配信。HTML には、閲覧者の国（data-country）と、
+//               開発中の固定言語（data-force-lang。FORCE_LANG が設定されているときだけ）を埋め込む
 //
 // 個人情報は保存しない：IP アドレスは IP_HASH_KEY を使った HMAC にしてから保存し、元の値はどこにも残さない。
 // 書き出し時は PUBLISH_HASH_KEY でさらにハッシュし直す（研究データを公開しても、保存側の値と突き合わせられない）。
@@ -26,10 +27,24 @@ export default {
       case "/x/export":
         return exportEvents(request, env, url);
       default:
-        return env.ASSETS.fetch(request);
+        return withLangHints(await env.ASSETS.fetch(request), request, env);
     }
   },
 };
+
+// 言語の自動選択に使うヒントを <html> に埋め込む（ページを開いた後の言語の切り替わり＝ちらつきを防ぐため）
+function withLangHints(response, request, env) {
+  if (!(response.headers.get("content-type") || "").includes("text/html")) return response;
+  const country = request.cf?.country;
+  return new HTMLRewriter()
+    .on("html", {
+      element(el) {
+        if (country) el.setAttribute("data-country", country);
+        if (env.FORCE_LANG) el.setAttribute("data-force-lang", env.FORCE_LANG);
+      },
+    })
+    .transform(response);
+}
 
 async function collect(request, env) {
   if (request.method !== "POST") return new Response(null, { status: 405 });
