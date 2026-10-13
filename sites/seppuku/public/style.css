@@ -36,7 +36,7 @@ img { max-width: 100%; height: auto; display: block; }
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(10px);
 }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 400 15px/1 var(--serif); letter-spacing: 0.32em; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 400 15px/1 var(--serif); letter-spacing: 0.28em; white-space: nowrap; }
 .brand img { border-radius: 7px; }
 .nav nav { display: flex; gap: 26px; font: 14px/1 var(--serif); letter-spacing: 0.08em; color: var(--muted); }
 .nav nav a { text-decoration: none; transition: color .2s; }
@@ -181,3 +181,11 @@ blockquote .ja { margin-top: 14px; font-style: normal; font-size: 16px; letter-s
 }
 .lang select:hover, .lang select:focus-visible { border-color: var(--lavender); outline: none; }
 .nav nav { margin-left: auto; margin-right: 8px; }
+
+@media (max-width: 400px) { .brand { font-size: 13px; letter-spacing: 0.2em; } }
+
+.net-badge { font: 600 10px/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: #fff; background: var(--lavender); padding: 4px 8px; border-radius: 999px; }
+.net-badge[hidden] { display: none; }
+
+.eyebrow span { display: block; }
+.eyebrow .coin-name { margin-bottom: 6px; color: var(--ink); letter-spacing: 0.3em; }

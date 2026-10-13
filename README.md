@@ -4,12 +4,13 @@
 
 - すべてのコインが同じコントラクト（`src/`）を使います。違うのは `coins/<コイン名>/` の設定とストーリーだけです
 - 研究の設計 → [research/README.md](research/README.md)
+- ローンチの手順（テストネット → 本番）→ [LAUNCH.md](LAUNCH.md)
 
 ## コイン一覧
 
 | コイン | ティッカー | 発行枚数 | 配分（流動性 / チーム / コミュニティ） | 半減期（クリフ / 間隔 / 回数） | 状態 | フォルダ |
 |---|---|---|---|---|---|---|
-| SEPPUKU | $SEPPUKU | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 準備中 | [coins/seppuku](coins/seppuku) |
+| SEPPUKU COIN | $SEPPUKU | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 準備中 | [coins/seppuku](coins/seppuku) |
 
 仕様の違い（発行枚数・配分・半減期）は、すべて各コインの `coin.env` で設定します。コントラクトのコードは全コイン共通です。
 
@@ -43,6 +44,8 @@ src/HalvingVesting.sol    半減期型のチーム分ロック（全コイン共
 script/Deploy.s.sol       デプロイと配分を一括で行うスクリプト
 test/MemeCoin.t.sol       テスト
 deploy.sh                 コインを指定してデプロイするラッパー
+add-liquidity.sh          Uniswap v3 にプールを作り流動性を入れるラッパー（script/AddLiquidity.s.sol）
+scripts-env.sh            上の2つが読み込む共通処理（coin.env / coin.testnet.env の読み込み、本番の確認）
 .env.example              全コイン共通の秘密情報（RPC、API キー）のテンプレート
 coins/
   _template/              新しいコインを作るときのひな形
@@ -70,68 +73,17 @@ cp -R coins/_template coins/新しいコイン名
 
 ## 手順
 
-### 0. 準備
+Foundry の準備、デプロイ、流動性の追加、テストネットでの確認、本番の前のチェックリストは、[LAUNCH.md](LAUNCH.md) にまとめています。
 
 ```bash
-curl -L https://foundry.paradigm.xyz | bash && foundryup
+forge test
 ```
+
+Base Sepolia を複製して、プールの作成・購入・売却まで確かめるテスト（ネットワークが必要）:
 
 ```bash
-forge install && forge test
+BASE_SEPOLIA_RPC_URL=https://sepolia.base.org forge test --match-contract Fork -vv
 ```
-
-デプロイ用のウォレットを、暗号化したキーストアとして登録します（秘密鍵を `.env` に書かないため）。
-
-```bash
-cast wallet import deployer --interactive
-```
-
-```bash
-cp .env.example .env
-```
-
-`.env` に Etherscan の API キーなどを記入します。次に `coins/<コイン名>/coin.env` を開いて、`TEAM_WALLET` と `COMMUNITY_WALLET` を記入します。`TEAM_WALLET` は**後から変更できません**。ハードウェアウォレットか [Safe](https://app.safe.global) のマルチシグにしてください。
-
-まず、ローカルで試します（何も送信しません）。
-
-```bash
-./deploy.sh seppuku dry-run
-```
-
-### 1. テストネット（Base Sepolia）で本番と同じ手順を試す
-
-テストネット用の ETH は faucet（無料配布サイト）で入手します。
-
-```bash
-./deploy.sh seppuku base_sepolia
-```
-
-### 2. 本番（Base Mainnet）
-
-```bash
-./deploy.sh seppuku base
-```
-
-デプロイのガス代は通常 **1ドル未満** です。Basescan でのソースコードの公開・検証まで自動で行います（信頼を得るために必須）。終わったら、表示されたアドレスを `coins/<コイン名>/deployments.md` に記録します。
-
-### 3. DEX に流動性を追加する（ここで取引が始まる）
-
-デプロイしたウォレットに 90%（9億枚）が残っています。これと ETH をペアにしてプールを作ります。
-
-- **Uniswap**（app.uniswap.org → Base を選択 → Pool → 新規作成）: 手数料 1%、価格帯はフルレンジ
-- **Aerodrome**（Base で最大の DEX）: Volatile プール
-
-**初期の時価総額 ≒ 入れた ETH ÷ 0.9** になります。例えば 9億枚 + 1 ETH で始めると、時価総額は約 1.1 ETH です。入れる ETH が少ないと価格がすぐ大きく動き、bot に狙われやすくなります。
-
-### 4. 流動性をロックする（強く推奨）
-
-LP（流動性ポジション）を UNCX や Team Finance などのロッカーで 1 年以上ロックし、そのリンクを公開します。ロックしない場合、「いつでも流動性を抜ける＝ラグプルできる」と判断され、ほとんど買われません。Uniswap v3/v4 のポジションは、ロッカーによってはロック中も**手数料だけは受け取れます**。
-
-### 5. 公開したあと
-
-- DexScreener / GeckoTerminal にはプールが自動で表示されます。DexScreener のトークン情報（ロゴ・SNS リンク）を登録すると、目立ちやすくなります（有料）
-- CoinGecko / CoinMarketCap への掲載申請（無料、審査あり）
-- X（Twitter）、Farcaster、Telegram でコミュニティを作る
 
 ## 安全性について
 

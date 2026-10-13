@@ -41,8 +41,10 @@ contract Deploy is Script {
         uint256 periodDays = vm.envUint("VESTING_PERIOD_DAYS");
         require(halvings >= 1 && halvings <= 64, "VESTING_HALVINGS must be 1-64");
         require(periodDays > 0, "VESTING_PERIOD_DAYS must be > 0");
-        c.cliff = uint64(vm.envUint("VESTING_CLIFF_DAYS") * 1 days);
-        c.period = uint64(periodDays * 1 days);
+        // テストネット用：*_SECONDS があれば日数より優先する（半減期の動きを数時間で確かめるため）
+        c.cliff = uint64(vm.envOr("VESTING_CLIFF_SECONDS", vm.envUint("VESTING_CLIFF_DAYS") * 1 days));
+        c.period = uint64(vm.envOr("VESTING_PERIOD_SECONDS", periodDays * 1 days));
+        require(c.period > 0, "vesting period must be > 0");
         c.halvings = uint8(halvings);
     }
 
