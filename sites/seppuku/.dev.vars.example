@@ -1,0 +1,5 @@
+# ローカル開発用（.dev.vars にコピー。.dev.vars は Git の対象外）
+# 本番の値は `npx wrangler secret put <名前> --config seppuku/wrangler.jsonc` で登録する
+IP_HASH_KEY=local-dev-only
+PUBLISH_HASH_KEY=local-dev-only-publish
+EXPORT_TOKEN=local-dev-only-token

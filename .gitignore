@@ -3,3 +3,7 @@ cache/
 broadcast/
 .env
 private/
+node_modules/
+.wrangler/
+.dev.vars
+.claude/

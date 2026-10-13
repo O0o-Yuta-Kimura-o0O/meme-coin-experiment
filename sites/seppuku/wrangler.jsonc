@@ -1,0 +1,25 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "seppuku-site",
+  "main": "../shared/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/x/*"],
+    "not_found_handling": "404-page"
+  },
+  "rules": [{ "type": "Text", "globs": ["**/*.client.js"], "fallthrough": false }],
+  "vars": { "SITE": "seppuku" },
+  // 全コインのサイトで1つのデータベースを共有する（site 列で区別）
+  // database_id は `npx wrangler d1 create meme-analytics` の出力で置き換える
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "meme-analytics",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "../migrations"
+    }
+  ],
+  "observability": { "enabled": true }
+}

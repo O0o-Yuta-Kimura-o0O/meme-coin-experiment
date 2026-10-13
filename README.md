@@ -50,10 +50,13 @@ coins/
     coin.env              名前・発行枚数・配分・ウォレット・半減期
     README.md             コンセプト、ストーリー、リンク
     deployments.md        デプロイ記録（アドレス、日時、初期流動性）
-    tracking.json         データ収集の対象（トークンのアドレス、SNS アカウント、検索語）
+    tracking.json         データ収集の対象（トークンのアドレス、サイトの URL、SNS アカウント、検索語）
 research/                 研究の設計、データ、分析
   scripts/collect_snapshots.py   市場データと SNS の指標を取得するスクリプト
   data/<コイン名>/snapshots.csv   6時間ごとの自動記録
+  scripts/fetch_web_events.py    サイトの閲覧イベントを取り込むスクリプト
+  data/<コイン名>/web_events.csv  閲覧イベント（訪問者 ID は公開用にハッシュし直したもの）
+sites/                    コインごとの Web ページと閲覧解析（Cloudflare Workers。sites/README.md 参照）
 .github/workflows/        GitHub Actions（データの自動収集）
 ```
 

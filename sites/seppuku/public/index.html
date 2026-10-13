@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SEPPUKU — Diamond hands, or SEPPUKU.</title>
+  <meta name="description" content="$SEPPUKU: a fixed-supply meme coin on Base. No owner, no tax, team tokens locked by halving. Part of an open social experiment.">
+  <meta property="og:title" content="$SEPPUKU — Diamond hands, or SEPPUKU.">
+  <meta property="og:description" content="Fixed supply. No owner. No tax. Team tokens unlock by halving. An open social experiment on Base.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#0d0b0a">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="/x/s.js" defer></script>
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="SEPPUKU home"><img src="logo.svg" alt="" width="32" height="32"><span>SEPPUKU</span></a>
+    <nav>
+      <a href="#story">Story</a>
+      <a href="#tokenomics">Tokenomics</a>
+      <a href="#halving">Halving</a>
+      <a href="#buy">How to buy</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <img class="hero-logo" src="logo.svg" alt="SEPPUKU logo" width="160" height="160">
+      <p class="ticker">$SEPPUKU · on Base</p>
+      <h1>Diamond hands,<br>or <span class="red">SEPPUKU.</span></h1>
+      <p class="ja">覚悟は、コードに刻んだ。</p>
+      <div class="cta">
+        <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外す -->
+        <a class="btn primary" href="#buy" data-track="cta_buy" aria-disabled="true">Buy — coming soon</a>
+        <a class="btn" href="#experiment" data-track="cta_experiment">The experiment</a>
+      </div>
+      <div class="ca">
+        <span class="ca-label">Contract</span>
+        <!-- ローンチ後: data-address と表示をトークンのアドレスに差し替え -->
+        <code id="ca" data-address="">Not deployed yet</code>
+        <button type="button" id="copy-ca" data-track="copy_address" disabled>Copy</button>
+      </div>
+    </section>
+
+    <section id="story" class="section">
+      <h2>The story <span class="ja-sub">物語</span></h2>
+      <p>The samurai did not panic-sell. When honor was on the line, they held — to the very end.</p>
+      <p>$SEPPUKU is a meme coin for holders with that kind of resolve. And it asks the same of its creator: the team's tokens are locked in a contract and released only by <strong>halving</strong>, like Bitcoin. No quick exit. No secret mint. The resolve is written in code, for anyone to verify.</p>
+      <p class="ja">侍は狼狽売りをしない。$SEPPUKU は、覚悟あるホルダーのためのミームコイン。発行者の取り分も半減期でしか解放されず、その覚悟はコードとして誰でも確認できる。</p>
+    </section>
+
+    <section id="tokenomics" class="section">
+      <h2>Tokenomics <span class="ja-sub">設計</span></h2>
+      <div class="cards">
+        <div class="card"><span class="num">1,000,000,000</span><span>Total supply — minted once, never again</span></div>
+        <div class="card"><span class="num">90%</span><span>Liquidity on DEX</span></div>
+        <div class="card"><span class="num">5%</span><span>Team — locked, released by halving</span></div>
+        <div class="card"><span class="num">5%</span><span>Community &amp; airdrops</span></div>
+        <div class="card"><span class="num">0%</span><span>Buy / sell tax</span></div>
+        <div class="card"><span class="num">None</span><span>Owner, mint, pause or blacklist</span></div>
+      </div>
+    </section>
+
+    <section id="halving" class="section">
+      <h2>Team halving schedule <span class="ja-sub">半減期</span></h2>
+      <p>After a 90-day cliff, half of the team allocation unlocks. Every 180 days after that, half of what remains unlocks. Fully unlocked after the 8th halving (~3.7 years).</p>
+      <ol class="halving">
+        <li style="--p:50%"><span>Day 90</span><b>50%</b></li>
+        <li style="--p:75%"><span>Day 270</span><b>75%</b></li>
+        <li style="--p:87.5%"><span>Day 450</span><b>87.5%</b></li>
+        <li style="--p:93.75%"><span>Day 630</span><b>93.75%</b></li>
+        <li style="--p:96.875%"><span>Day 810</span><b>96.9%</b></li>
+        <li style="--p:100%"><span>Day 1350</span><b>100%</b></li>
+      </ol>
+    </section>
+
+    <section id="buy" class="section">
+      <h2>How to buy <span class="ja-sub">購入方法</span></h2>
+      <ol class="steps">
+        <li><b>Get a wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
+        <li><b>Get ETH on Base.</b> Buy on an exchange and withdraw to the Base network, or bridge from Ethereum.</li>
+        <li><b>Swap on Uniswap.</b> Paste the contract address above — always check it matches this page. Fake tokens with the same name exist.</li>
+      </ol>
+    </section>
+
+    <section id="experiment" class="section experiment">
+      <h2>This is an experiment <span class="ja-sub">社会実験</span></h2>
+      <p>$SEPPUKU is part of an open research project on how <strong>names and stories</strong> shape meme coin markets. Sibling coins share the exact same contract and settings; only the name and story differ. Market data, social metrics and anonymized site analytics are recorded and will be published.</p>
+      <p class="ja">$SEPPUKU は「名前とストーリーがミームコインの市場にどう影響するか」を調べる公開研究の一部です。同じコントラクト・同じ設定で、名前とストーリーだけが違うコインと比較します。</p>
+      <!-- リポジトリ公開後: リンクを追加 -->
+    </section>
+
+    <section class="section disclaimer">
+      <h2>Read this <span class="ja-sub">注意事項</span></h2>
+      <p>$SEPPUKU is a meme coin with no intrinsic value and no expectation of financial return. There is no team promise, roadmap or profit sharing. Its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
+      <p class="ja">$SEPPUKU は本質的な価値を持たないミームコインであり、利益を約束するものではありません。価格はゼロになり得ます。投資助言ではありません。失っても困らない範囲で、お住まいの地域の法令に従ってご利用ください。</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <!-- アカウント開設後: href を差し替え -->
+    <a href="#" data-track="social_x">X</a>
+    <a href="#" data-track="social_youtube">YouTube</a>
+    <a href="#" data-track="social_instagram">Instagram</a>
+    <a href="privacy.html">Privacy</a>
+  </footer>
+
+  <script>
+    const ca = document.getElementById("ca");
+    const btn = document.getElementById("copy-ca");
+    if (ca.dataset.address) {
+      btn.disabled = false;
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(ca.dataset.address);
+          btn.textContent = "Copied";
+          setTimeout(() => (btn.textContent = "Copy"), 1500);
+        } catch {}
+      });
+    }
+  </script>
+</body>
+</html>

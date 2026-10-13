@@ -1,5 +1,6 @@
 {
   "token_address": "",
+  "site_url": "",
   "x": {
     "username": "",
     "query": "\"SEPPUKU\" (coin OR token) -is:retweet"

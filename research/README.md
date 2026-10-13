@@ -71,6 +71,8 @@ GitHub Actions（[.github/workflows/collect-snapshots.yml](../.github/workflows/
 | YouTube | 登録者数、総再生数、動画数、直近24時間の関連動画数（概算） | `YOUTUBE_API_KEY` | 無料（1日 10,000 ユニットの枠内。1回の実行で 1コインあたり約 101 ユニット） |
 | Instagram | フォロワー数、投稿数、直近24時間のハッシュタグ投稿数 | `IG_ACCESS_TOKEN` | 無料 |
 
+| 自分のサイト（Cloudflare） | 来訪・クリック・スクロール・離脱の時刻、ハッシュ化した訪問者 ID、国、端末、参照元、アプリ内ブラウザ | `site_url` と `SITE_EXPORT_TOKEN` | 無料（詳しくは [sites/README.md](../sites/README.md)） |
+
 ### 設定の手順
 
 **1. コインごとの対象を書く**：`coins/<コイン名>/tracking.json`
@@ -78,6 +80,7 @@ GitHub Actions（[.github/workflows/collect-snapshots.yml](../.github/workflows/
 | 項目 | 書くもの |
 |---|---|
 | `token_address` | デプロイしたトークンのアドレス（デプロイするまでは空欄） |
+| `site_url` | コインのサイトの URL（例: `https://seppuku-site.xxx.workers.dev`） |
 | `x.username` / `x.query` | 公式アカウント名（@ なし）/ 言及を数える検索条件 |
 | `youtube.channel_id` / `youtube.query` | 公式チャンネルの ID（`UC` で始まる）/ 関連動画の検索語 |
 | `instagram.user_id` / `instagram.hashtag` | Instagram ビジネスアカウントの ID（数字）/ 数えるハッシュタグ（# なし） |

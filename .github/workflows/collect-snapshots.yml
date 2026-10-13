@@ -32,6 +32,11 @@ jobs:
           IG_GRAPH_VERSION: ${{ vars.IG_GRAPH_VERSION }}
         run: python3 research/scripts/collect_snapshots.py
 
+      - name: Fetch web events
+        env:
+          SITE_EXPORT_TOKEN: ${{ secrets.SITE_EXPORT_TOKEN }}
+        run: python3 research/scripts/fetch_web_events.py
+
       - name: Commit data
         run: |
           git add research/data
