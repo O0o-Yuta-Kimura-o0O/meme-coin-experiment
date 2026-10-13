@@ -3,100 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SEPPUKU — Diamond hands, or SEPPUKU.</title>
-  <meta name="description" content="$SEPPUKU: a fixed-supply meme coin on Base. No owner, no tax, team tokens locked by halving. Part of an open social experiment.">
-  <meta property="og:title" content="$SEPPUKU — Diamond hands, or SEPPUKU.">
-  <meta property="og:description" content="Fixed supply. No owner. No tax. Team tokens unlock by halving. An open social experiment on Base.">
+  <title>SEPPUKU — The proof was beautiful. It just wasn't ours.</title>
+  <meta name="description" content="$SEPPUKU: a conceptual meme coin on Base about mathematicians outproved by AI — and a celebration of mathematics moving forward.">
+  <meta property="og:title" content="$SEPPUKU — The proof was beautiful. It just wasn't ours.">
+  <meta property="og:description" content="A conceptual meme coin about mathematicians outproved by AI. What is cut is pride. What survives is mathematics.">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <meta name="theme-color" content="#0d0b0a">
+  <!-- 独自ドメインが決まったら絶対 URL にする（例: https://seppuku.xyz/og.jpg） -->
+  <meta property="og:image" content="og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f7f3f8">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="hero.webp">
   <link rel="stylesheet" href="style.css">
   <script src="/x/s.js" defer></script>
 </head>
 <body>
+  <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
   <header class="nav">
-    <a class="brand" href="#top" aria-label="SEPPUKU home"><img src="logo.svg" alt="" width="32" height="32"><span>SEPPUKU</span></a>
+    <a class="brand" href="#top" aria-label="SEPPUKU home"><img src="logo.svg" alt="" width="28" height="28"><span>SEPPUKU</span></a>
     <nav>
       <a href="#story">Story</a>
-      <a href="#tokenomics">Tokenomics</a>
-      <a href="#halving">Halving</a>
-      <a href="#buy">How to buy</a>
+      <a href="#definitions">Definitions</a>
+      <a href="#lemma">Halving</a>
+      <a href="#buy">Acquire</a>
     </nav>
   </header>
 
   <main id="top">
     <section class="hero">
-      <img class="hero-logo" src="logo.svg" alt="SEPPUKU logo" width="160" height="160">
-      <p class="ticker">$SEPPUKU · on Base</p>
-      <h1>Diamond hands,<br>or <span class="red">SEPPUKU.</span></h1>
-      <p class="ja">覚悟は、コードに刻んだ。</p>
-      <div class="cta">
-        <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外す -->
-        <a class="btn primary" href="#buy" data-track="cta_buy" aria-disabled="true">Buy — coming soon</a>
-        <a class="btn" href="#experiment" data-track="cta_experiment">The experiment</a>
-      </div>
-      <div class="ca">
-        <span class="ca-label">Contract</span>
-        <!-- ローンチ後: data-address と表示をトークンのアドレスに差し替え -->
-        <code id="ca" data-address="">Not deployed yet</code>
-        <button type="button" id="copy-ca" data-track="copy_address" disabled>Copy</button>
-      </div>
-    </section>
-
-    <section id="story" class="section">
-      <h2>The story <span class="ja-sub">物語</span></h2>
-      <p>The samurai did not panic-sell. When honor was on the line, they held — to the very end.</p>
-      <p>$SEPPUKU is a meme coin for holders with that kind of resolve. And it asks the same of its creator: the team's tokens are locked in a contract and released only by <strong>halving</strong>, like Bitcoin. No quick exit. No secret mint. The resolve is written in code, for anyone to verify.</p>
-      <p class="ja">侍は狼狽売りをしない。$SEPPUKU は、覚悟あるホルダーのためのミームコイン。発行者の取り分も半減期でしか解放されず、その覚悟はコードとして誰でも確認できる。</p>
-    </section>
-
-    <section id="tokenomics" class="section">
-      <h2>Tokenomics <span class="ja-sub">設計</span></h2>
-      <div class="cards">
-        <div class="card"><span class="num">1,000,000,000</span><span>Total supply — minted once, never again</span></div>
-        <div class="card"><span class="num">90%</span><span>Liquidity on DEX</span></div>
-        <div class="card"><span class="num">5%</span><span>Team — locked, released by halving</span></div>
-        <div class="card"><span class="num">5%</span><span>Community &amp; airdrops</span></div>
-        <div class="card"><span class="num">0%</span><span>Buy / sell tax</span></div>
-        <div class="card"><span class="num">None</span><span>Owner, mint, pause or blacklist</span></div>
+      <figure class="hero-figure">
+        <img src="hero.webp" alt="A samurai in white kneels on a tatami before a folding screen of plum blossoms, attended by retainers, as petals fall." width="1672" height="941">
+      </figure>
+      <div class="hero-text">
+        <p class="eyebrow">$SEPPUKU &nbsp;·&nbsp; a conceptual meme coin on Base</p>
+        <h1>The proof was beautiful.<br><em>It just wasn't ours.</em></h1>
+        <p class="ja">証明は美しかった。<wbr>ただ、それは私たちの<wbr>ものではなかった。</p>
+        <div class="cta">
+          <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外す -->
+          <a class="btn primary" href="#buy" data-track="cta_buy" aria-disabled="true">Acquire — coming soon</a>
+          <a class="btn" href="#story" data-track="cta_story">Read the story</a>
+        </div>
+        <div class="ca">
+          <span class="ca-label">Contract</span>
+          <!-- ローンチ後: data-address と表示をトークンのアドレスに差し替え -->
+          <code id="ca" data-address="">Not deployed yet</code>
+          <button type="button" id="copy-ca" data-track="copy_address" disabled>Copy</button>
+        </div>
       </div>
     </section>
 
-    <section id="halving" class="section">
-      <h2>Team halving schedule <span class="ja-sub">半減期</span></h2>
-      <p>After a 90-day cliff, half of the team allocation unlocks. Every 180 days after that, half of what remains unlocks. Fully unlocked after the 8th halving (~3.7 years).</p>
+    <section id="story" class="section prose">
+      <p class="label">§1 &nbsp; Story <span class="ja-sub">物語</span></p>
+      <p class="lead">For thirty years, he lived with one conjecture.</p>
+      <p>He knew its every corner. He had named his failed approaches like old friends. Then, one quiet morning, a machine posted the proof. It was eleven pages long. It was correct. It was, he had to admit, elegant.</p>
+      <p>He dressed in white. He knelt on the tatami. The blade lay before him, as tradition demands.</p>
+      <p>And then he picked up the proof instead — and read it to the last line.</p>
+      <blockquote>
+        <p>What is cut is pride.<br>What survives is mathematics.</p>
+        <p class="ja">切るのは、己の矜持。<wbr>生き残るのは、数学。</p>
+      </blockquote>
+      <p>$SEPPUKU is a piece of conceptual art in the form of a meme coin. It gently satirizes the drama of being outproved by AI — not to mock mathematicians, nor to condemn AI, but to celebrate a strange and wonderful moment: theorems are falling faster than ever, and mathematics is moving forward.</p>
+      <p class="ja">$SEPPUKU は、ミームコインという形をとったコンセプチュアルアートです。AI に先を越された数学者の悲劇を客観的に、少しだけ皮肉を込めて描きます。ただしこれは、数学者への嘲笑でも AI への否定でもありません。AI によって数学が前に進むことを喜ぶ、一人のアマチュア数学者からの前向きなメッセージです。</p>
+    </section>
+
+    <section id="definitions" class="section">
+      <p class="label">§2 &nbsp; Definitions <span class="ja-sub">定義</span></p>
+      <dl class="defs">
+        <div><dt>Definition 1 <span>(Supply)</span></dt><dd><b>1,000,000,000</b> tokens, minted once. No further mint exists.</dd></div>
+        <div><dt>Definition 2 <span>(Distribution)</span></dt><dd><b>90%</b> liquidity · <b>5%</b> team, locked by halving · <b>5%</b> community</dd></div>
+        <div><dt>Definition 3 <span>(Neutrality)</span></dt><dd><b>0%</b> tax. No owner, no pause, no blacklist. The contract cannot be changed — by anyone, including its author.</dd></div>
+      </dl>
+    </section>
+
+    <section id="lemma" class="section">
+      <p class="label">§3 &nbsp; Lemma <span class="ja-sub">半減期</span></p>
+      <p class="statement"><b>Lemma (Halving).</b> Let <i>T</i> be the team allocation. After the <i>n</i>-th halving, the unlocked amount is</p>
+      <p class="formula"><i>V</i>(<i>n</i>) = <i>T</i> · (1 − 2<sup>−<i>n</i></sup>), &nbsp; 1 ≤ <i>n</i> &lt; 8, &nbsp;&nbsp; <i>V</i>(8) = <i>T</i>.</p>
+      <p class="statement"><i>Proof.</i> Written in the contract, verifiable by anyone. The first halving comes 90 days after launch; each subsequent one, 180 days later. <span class="qed">∎</span></p>
       <ol class="halving">
-        <li style="--p:50%"><span>Day 90</span><b>50%</b></li>
-        <li style="--p:75%"><span>Day 270</span><b>75%</b></li>
-        <li style="--p:87.5%"><span>Day 450</span><b>87.5%</b></li>
-        <li style="--p:93.75%"><span>Day 630</span><b>93.75%</b></li>
-        <li style="--p:96.875%"><span>Day 810</span><b>96.9%</b></li>
-        <li style="--p:100%"><span>Day 1350</span><b>100%</b></li>
+        <li style="--p:50%"><span>n = 1 · day 90</span><b>50%</b></li>
+        <li style="--p:75%"><span>n = 2 · day 270</span><b>75%</b></li>
+        <li style="--p:87.5%"><span>n = 3 · day 450</span><b>87.5%</b></li>
+        <li style="--p:93.75%"><span>n = 4 · day 630</span><b>93.75%</b></li>
+        <li style="--p:96.875%"><span>n = 5 · day 810</span><b>96.9%</b></li>
+        <li style="--p:100%"><span>n = 8 · day 1350</span><b>100%</b></li>
       </ol>
     </section>
 
     <section id="buy" class="section">
-      <h2>How to buy <span class="ja-sub">購入方法</span></h2>
+      <p class="label">§4 &nbsp; Construction <span class="ja-sub">入手方法</span></p>
       <ol class="steps">
-        <li><b>Get a wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
-        <li><b>Get ETH on Base.</b> Buy on an exchange and withdraw to the Base network, or bridge from Ethereum.</li>
-        <li><b>Swap on Uniswap.</b> Paste the contract address above — always check it matches this page. Fake tokens with the same name exist.</li>
+        <li><b>A wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
+        <li><b>ETH on Base.</b> Withdraw from an exchange to the Base network, or bridge from Ethereum.</li>
+        <li><b>A swap on Uniswap.</b> Paste the contract address above, and check that it matches this page. Imitations exist.</li>
       </ol>
     </section>
 
-    <section id="experiment" class="section experiment">
-      <h2>This is an experiment <span class="ja-sub">社会実験</span></h2>
-      <p>$SEPPUKU is part of an open research project on how <strong>names and stories</strong> shape meme coin markets. Sibling coins share the exact same contract and settings; only the name and story differ. Market data, social metrics and anonymized site analytics are recorded and will be published.</p>
-      <p class="ja">$SEPPUKU は「名前とストーリーがミームコインの市場にどう影響するか」を調べる公開研究の一部です。同じコントラクト・同じ設定で、名前とストーリーだけが違うコインと比較します。</p>
+    <section id="experiment" class="section">
+      <p class="label">§5 &nbsp; Experiment <span class="ja-sub">社会実験</span></p>
+      <p>$SEPPUKU is also part of an open research project on how <strong>names and stories</strong> shape meme coin markets. Sibling coins share the exact same contract and settings; only the name and story differ. Market data, social metrics and anonymized site analytics are recorded and will be published.</p>
+      <p class="ja">$SEPPUKU は、「名前とストーリーがミームコインの市場にどう影響するか」を調べる公開研究の一部でもあります。同じコントラクト・同じ設定で、名前とストーリーだけが違うコインと比較します。</p>
       <!-- リポジトリ公開後: リンクを追加 -->
     </section>
 
-    <section class="section disclaimer">
-      <h2>Read this <span class="ja-sub">注意事項</span></h2>
-      <p>$SEPPUKU is a meme coin with no intrinsic value and no expectation of financial return. There is no team promise, roadmap or profit sharing. Its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
+    <section class="section remark">
+      <p class="label">Remark <span class="ja-sub">注意事項</span></p>
+      <p>$SEPPUKU is a meme coin with no intrinsic value and no expectation of financial return. There is no promise, roadmap or profit sharing, and its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
       <p class="ja">$SEPPUKU は本質的な価値を持たないミームコインであり、利益を約束するものではありません。価格はゼロになり得ます。投資助言ではありません。失っても困らない範囲で、お住まいの地域の法令に従ってご利用ください。</p>
+      <p>If you are struggling, please talk to someone you trust or a local support line. This work is about letting go of pride — never of life.</p>
     </section>
+
+    <p class="fin">∎</p>
   </main>
 
   <footer class="footer">
