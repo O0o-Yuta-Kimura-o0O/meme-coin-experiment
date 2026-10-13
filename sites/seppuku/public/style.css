@@ -189,3 +189,58 @@ blockquote .ja { margin-top: 14px; font-style: normal; font-size: 16px; letter-s
 
 .eyebrow span { display: block; }
 .eyebrow .coin-name { margin-bottom: 6px; color: var(--ink); letter-spacing: 0.3em; }
+
+/* ---------- スクロールの演出（motion.js が <html class="motion"> を付けたときだけ） ---------- */
+@property --fill { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+
+.progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 30;
+  background: linear-gradient(90deg, var(--lavender), var(--sakura));
+  transform: scaleX(0); transform-origin: left center; pointer-events: none;
+}
+.nav { transition: box-shadow .4s ease, background .4s ease; }
+.nav.scrolled { box-shadow: 0 10px 30px -24px rgba(91, 70, 110, 0.5); }
+
+.motion .hero-figure { animation: hero-in 1.6s cubic-bezier(.2, .7, .2, 1) both; }
+.motion .hero-figure img { will-change: transform; transform: scale(1.06); }
+.motion .hero-text > * { animation: rise .9s cubic-bezier(.2, .7, .2, 1) both; }
+.motion .hero-text > :nth-child(1) { animation-delay: .35s; }
+.motion .hero-text > :nth-child(2) { animation-delay: .5s; }
+.motion .hero-text > :nth-child(3) { animation-delay: .7s; }
+.motion .hero-text > :nth-child(4) { animation-delay: .85s; }
+.motion .hero-text > :nth-child(5) { animation-delay: 1s; }
+@keyframes hero-in { from { opacity: 0; clip-path: inset(6% 4% 6% 4% round 6px); } to { opacity: 1; clip-path: inset(0 0 0 0 round 6px); } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.motion .reveal { opacity: 0; transform: translateY(22px); transition: opacity 1s ease, transform 1s cubic-bezier(.2, .7, .2, 1); }
+.motion .reveal.in { opacity: 1; transform: none; }
+
+/* 引用の上下の線を、中央から左右へ引く */
+.motion blockquote {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--sakura), var(--sakura)) top center / 0% 1px no-repeat,
+    linear-gradient(var(--sakura), var(--sakura)) bottom center / 0% 1px no-repeat;
+  transition: opacity 1s ease, transform 1s cubic-bezier(.2, .7, .2, 1), background-size 1.4s cubic-bezier(.6, 0, .2, 1) .2s;
+}
+.motion blockquote.in { background-size: 100% 1px, 100% 1px; }
+
+/* 半減期のバーを順に伸ばす */
+.halving li::after {
+  --fill: var(--p);
+  background: linear-gradient(90deg, var(--lavender), var(--sakura) var(--fill), var(--bg-2) var(--fill));
+  transition: --fill 1.4s cubic-bezier(.2, .7, .2, 1);
+}
+.motion .halving:not(.in) li::after { --fill: 0%; }
+.halving li:nth-child(2)::after { transition-delay: .12s; }
+.halving li:nth-child(3)::after { transition-delay: .24s; }
+.halving li:nth-child(4)::after { transition-delay: .36s; }
+.halving li:nth-child(5)::after { transition-delay: .48s; }
+.halving li:nth-child(6)::after { transition-delay: .6s; }
+
+/* 最後の ∎ */
+.motion .fin.reveal { transform: scale(.6); transition: opacity 1.2s ease, transform 1.2s cubic-bezier(.2, 1.4, .4, 1); }
+.motion .fin.reveal.in { transform: none; }
+
+/* 日中韓の文字は斜体にすると読みにくいので、立体のままにする */
+:lang(ja) .halving span, :lang(zh) .halving span, :lang(ko) .halving span { font-style: normal; }
