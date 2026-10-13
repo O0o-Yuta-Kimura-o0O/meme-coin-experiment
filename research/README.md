@@ -52,7 +52,65 @@
 - Basescan（保有者、トランザクション）
 - Dune（オンチェーンデータに SQL でクエリでき、ダッシュボードも公開できる）
 
-取得したデータとスクリプトは、`research/data/` と `research/scripts/` に置く予定。
+## 自動データ収集
+
+GitHub Actions（[.github/workflows/collect-snapshots.yml](../.github/workflows/collect-snapshots.yml)）が **6時間ごと** に [scripts/collect_snapshots.py](scripts/collect_snapshots.py) を動かし、結果を `research/data/<コイン名>/snapshots.csv` に追記して自動でコミットします。サーバーは不要です。GitHub の画面の Actions タブ → Collect snapshots → Run workflow から、手動でも実行できます。
+
+- CSV の列：`timestamp_utc, source, metric, value`（縦長の形式。指標を増やしても列は変わらない）
+- SNS の言及数は「**直近24時間**」の件数（6時間ごとに記録するので、窓が重なり、取りこぼしが出ない）
+- 設定や認証情報が空のデータ源はスキップされる。1つが失敗しても、ほかの記録は続く
+- 費用：非公開リポジトリの Actions 無料枠（月2,000分）のうち、月120分程度
+
+### 記録する指標
+
+| データ源 | 指標 | 必要なもの | 費用 |
+|---|---|---|---|
+| GeckoTerminal | 価格、FDV、時価総額、流動性、24時間の取引高、保有者数 | `token_address` のみ | 無料 |
+| DexScreener | 24時間の買い・売りの回数、取引高、流動性、プール数 | `token_address` のみ | 無料 |
+| X | フォロワー数、投稿数、直近24時間の言及数 | `X_BEARER_TOKEN` | **有料**（料金体系がよく変わる。言及数の取得は、上位プランでないと使えない場合がある） |
+| YouTube | 登録者数、総再生数、動画数、直近24時間の関連動画数（概算） | `YOUTUBE_API_KEY` | 無料（1日 10,000 ユニットの枠内。1回の実行で 1コインあたり約 101 ユニット） |
+| Instagram | フォロワー数、投稿数、直近24時間のハッシュタグ投稿数 | `IG_ACCESS_TOKEN` | 無料 |
+
+### 設定の手順
+
+**1. コインごとの対象を書く**：`coins/<コイン名>/tracking.json`
+
+| 項目 | 書くもの |
+|---|---|
+| `token_address` | デプロイしたトークンのアドレス（デプロイするまでは空欄） |
+| `x.username` / `x.query` | 公式アカウント名（@ なし）/ 言及を数える検索条件 |
+| `youtube.channel_id` / `youtube.query` | 公式チャンネルの ID（`UC` で始まる）/ 関連動画の検索語 |
+| `instagram.user_id` / `instagram.hashtag` | Instagram ビジネスアカウントの ID（数字）/ 数えるハッシュタグ（# なし） |
+
+**2. 認証情報を GitHub の Secrets に登録する**：キーはファイルに書かず、ターミナルで下のコマンドを実行して、表示された入力欄に貼り付けます（GitHub の画面の Settings → Secrets and variables → Actions からも登録できます）。
+
+```bash
+gh secret set YOUTUBE_API_KEY
+```
+
+```bash
+gh secret set X_BEARER_TOKEN
+```
+
+```bash
+gh secret set IG_ACCESS_TOKEN
+```
+
+- **YouTube**：Google Cloud Console でプロジェクトを作成 →「YouTube Data API v3」を有効化 → 認証情報から API キーを作成。キーは YouTube Data API だけに使えるよう制限をかける
+- **X**：developer.x.com でアプリを作成し、Bearer Token を発行する。有料なので、言及数が研究に必要になってからでよい
+- **Instagram**：手順が一番多い
+  1. Instagram をビジネスかクリエイターのアカウントにする
+  2. Facebook ページとつなぐ
+  3. Meta for Developers でアプリを作成する
+  4. 権限 `instagram_basic` と `instagram_manage_insights` を付けたトークンを発行する
+  - 通常の長期トークンは **60日で失効する**。Meta Business Suite の「システムユーザー」で発行したトークンなら失効しないので、維持の手間がなくなる
+  - Graph API のバージョンは既定で `v24.0`。古くなったら、リポジトリの Variables に `IG_GRAPH_VERSION`（例: `v26.0`）を登録して変える
+
+**3. ローカルで試す**（記録はせず、表示するだけ）
+
+```bash
+python3 research/scripts/collect_snapshots.py --dry-run
+```
 
 ## 倫理面の注意
 

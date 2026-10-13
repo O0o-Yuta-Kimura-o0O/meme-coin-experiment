@@ -1,0 +1,15 @@
+{
+  "token_address": "",
+  "x": {
+    "username": "",
+    "query": "\"SEPPUKU\" (coin OR token) -is:retweet"
+  },
+  "youtube": {
+    "channel_id": "",
+    "query": "SEPPUKU coin"
+  },
+  "instagram": {
+    "user_id": "",
+    "hashtag": "seppukucoin"
+  }
+}

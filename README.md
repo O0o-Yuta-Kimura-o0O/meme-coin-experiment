@@ -50,7 +50,11 @@ coins/
     coin.env              名前・発行枚数・配分・ウォレット・半減期
     README.md             コンセプト、ストーリー、リンク
     deployments.md        デプロイ記録（アドレス、日時、初期流動性）
+    tracking.json         データ収集の対象（トークンのアドレス、SNS アカウント、検索語）
 research/                 研究の設計、データ、分析
+  scripts/collect_snapshots.py   市場データと SNS の指標を取得するスクリプト
+  data/<コイン名>/snapshots.csv   6時間ごとの自動記録
+.github/workflows/        GitHub Actions（データの自動収集）
 ```
 
 ## 新しいコインを追加する
