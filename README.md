@@ -5,7 +5,7 @@
 - すべてのコインが同じコントラクト（`src/`）を使います。違うのは `coins/<コイン名>/` の設定とストーリーだけです
 - 研究の設計 → [research/README.md](research/README.md)
 - ローンチの手順（テストネット → 本番）→ [LAUNCH.md](LAUNCH.md)
-- 共同制作者と、二人それぞれの手順 → [TEAM.md](TEAM.md)（木村 祐太・鳥間 勇、貢献度 50% / 50%）
+- 制作：**Team SEPPUKU**（木村 祐太 Yuta Kimura・鳥間 勇 Yu Torima、貢献度 50% / 50%）→ [TEAM.md](TEAM.md)
 
 ## コイン一覧
 

@@ -244,3 +244,5 @@ blockquote .ja { margin-top: 14px; font-style: normal; font-size: 16px; letter-s
 
 /* 日中韓の文字は斜体にすると読みにくいので、立体のままにする */
 :lang(ja) .halving span, :lang(zh) .halving span, :lang(ko) .halving span { font-style: normal; }
+
+.footer .credit { flex-basis: 100%; text-align: center; font-size: 12px; letter-spacing: 0.2em; opacity: 0.8; }
