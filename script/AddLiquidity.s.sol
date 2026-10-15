@@ -91,8 +91,9 @@ contract AddLiquidity is Script {
         bool single = keccak256(bytes(vm.envOr("LIQUIDITY_MODE", string("full")))) == keccak256("single");
 
         vm.startBroadcast();
-        if (recipient == address(0)) recipient = msg.sender;
-        uint256 tokenAmount = IERC20(token).balanceOf(msg.sender);
+        (, address sender,) = vm.readCallers();
+        if (recipient == address(0)) recipient = sender;
+        uint256 tokenAmount = IERC20(token).balanceOf(sender);
         Result memory r = single
             ? addSingleSided(
                 SingleSided({

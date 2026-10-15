@@ -24,7 +24,7 @@ cast wallet address --account deployer
 
 ## 1. 設定を確認する
 
-- `coins/seppuku/coin.env`：名前、発行枚数、配分、`TEAM_WALLET`、`COMMUNITY_WALLET`、流動性の方式（`LIQUIDITY_MODE`）と開始時の時価総額（`START_FDV_ETH`）
+- `coins/seppuku/coin.env`：名前、発行枚数、配分、`TEAM_WALLETS`（木村・鳥間の順にカンマ区切り。チーム分を 2.5% ずつ分ける）、`COMMUNITY_WALLET`、流動性の方式（`LIQUIDITY_MODE`）と開始時の時価総額（`START_FDV_ETH`）
 - `coins/seppuku/coin.testnet.env`：テストネットだけの上書き（半減期を1時間単位に短縮）
 
 ## 2. デプロイする
@@ -41,7 +41,7 @@ cast wallet address --account deployer
 ./deploy.sh seppuku base_sepolia
 ```
 
-表示された `Token` と `HalvingVesting` のアドレスを、`coins/seppuku/deployments.md` に記録します。Basescan（テストネットは sepolia.basescan.org）でソースコードが検証済みになっているかも確認します。
+表示された `Token` と、二人分の `HalvingVesting`（それぞれの受取人も表示される）のアドレスを、`coins/seppuku/deployments.md` に記録します。Basescan（テストネットは sepolia.basescan.org）でソースコードが検証済みになっているかも確認します。
 
 ## 3. 流動性を追加する（ここで売買できるようになる）
 
@@ -66,7 +66,7 @@ SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います
 |---|---|
 | 買える | Uniswap の画面（テストネット）か、別のウォレットからスワップ。0.001 ETH で約98万枚が目安（開始時の FDV 1 ETH の場合）。`cast send` で試す場合、最初の購入はガスの見積もりが足りずに失敗することがあるので、`--gas-limit 500000` を付ける |
 | 売れる | 買った分を売り戻す。往復で手数料 2% ほど目減りする。プールにある ETH（買った人が入れた分）より多くは出てこない |
-| 半減期 | 1時間後に `release()` を呼ぶと、チーム用ウォレットに50%が届く。以後1時間ごとに残りの半分、3時間後に全量 |
+| 半減期 | 1時間後に、二人それぞれの `HalvingVesting` で `release()` を呼ぶと、各自のウォレットに自分の分の50%が届く。以後1時間ごとに残りの半分、3時間後に全量 |
 | サイト | プレビュー版にテストネットのアドレスを載せ、コピーボタンと購入リンクを試す |
 
 `release()` は、Basescan の「Write Contract」から呼べます。コマンドなら次のとおりです。
@@ -79,7 +79,7 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 
 - [ ] テストネットで 2〜4 をすべて確認した
 - [ ] 弁護士に相談した（暗号資産交換業に当たらないか）
-- [ ] `TEAM_WALLET` はハードウェアウォレットか Safe のマルチシグになっている（後から変更できない）
+- [ ] `TEAM_WALLETS` の二人のアドレスが正しい（後から変更できない）。本番はハードウェアウォレットを推奨
 - [ ] `LIQUIDITY_MODE` と `START_FDV_ETH` は全コインで同じ値になっている
 - [ ] サイトの日本語固定（`sites/seppuku/wrangler.jsonc` の `FORCE_LANG`）を外した
 - [ ] LP をロックするロッカー（UNCX など）を決めた
