@@ -16,6 +16,7 @@ POSITION_MANAGERS = {
     "84532": "0x27f971cb582bf9e50f397e4d29a5c7a34f11faa2",
 }
 TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+LOCKED = "0x748bbc70c40b2e3e3b828688a7a7d8c2afb1e06ebe33406a029f4e985f94e07a"  # PermanentLPLock.Locked(uint256 indexed tokenId, address indexed beneficiary)
 ZERO = "0x" + "0" * 64
 
 
@@ -24,11 +25,20 @@ def main():
     npm = POSITION_MANAGERS[chain]
     path = Path(__file__).resolve().parents[1] / "broadcast" / "AddLiquidity.s.sol" / chain / "run-latest.json"
     data = json.loads(path.read_text())
+    minted, locked = [], {}
     for receipt in data.get("receipts", []):
         for log in receipt.get("logs", []):
             t = log.get("topics", [])
             if log["address"].lower() == npm and len(t) == 4 and t[0] == TRANSFER and t[1] == ZERO:
-                print(f"  実際の LP NFT : {int(t[3], 16)} -> 持ち主 0x{t[2][-40:]}")
+                minted.append((int(t[3], 16), "0x" + t[2][-40:]))
+            elif len(t) == 3 and t[0] == LOCKED:
+                locked[int(t[1], 16)] = ("0x" + t[2][-40:], log["address"])
+    for tid, owner in minted:
+        if tid in locked:
+            beneficiary, lock = locked[tid]
+            print(f"  実際の LP NFT : {tid} -> 永久ロック {lock}（手数料の受取人 {beneficiary}）")
+        else:
+            print(f"  実際の LP NFT : {tid} -> 持ち主 {owner}")
 
 
 if __name__ == "__main__":

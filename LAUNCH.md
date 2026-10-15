@@ -56,6 +56,7 @@ SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います
 - 買われるほど価格が上がり、プールに ETH がたまる。売られても、買った人が入れた ETH が戻るだけで、価格は開始価格より下がらない
 - 複数のコインで `START_FDV_ETH` を同じにすれば、開始条件をそろえられる
 - 誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は、自動で中止する
+- **流動性は永久にロックする**（`LP_LOCK=permanent`）。作ったポジションを、その場で `PermanentLPLock` に預ける。元本（コインと、買い手が払った ETH）は誰も、発行者自身も引き出せない。取引手数料だけは、誰が `collect` を呼んでも、`LP_RECIPIENTS` の二人に届く。二人のどちらかが鍵を失っても、プールでの売買は続く
 - `LP_RECIPIENTS` に二人のアドレスを書くと、同じ価格帯のポジション（NFT）を二人分作り、それぞれのウォレットに送る。買い手が払う ETH も取引手数料も、取引のたびに半分ずつ各自のポジションにたまる
 - 最後に「実際に作られた LP ポジション」として表示される番号を、`Pool` と一緒に `deployments.md` に記録する（途中のログの番号は送信前の予定値で、ずれることがある）
 
@@ -69,6 +70,12 @@ SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います
 | 売れる | 買った分を売り戻す。往復で手数料 2% ほど目減りする。プールにある ETH（買った人が入れた分）より多くは出てこない |
 | 半減期 | 1時間後に、二人それぞれの `HalvingVesting` で `release()` を呼ぶと、各自のウォレットに自分の分の50%が届く。以後1時間ごとに残りの半分、3時間後に全量 |
 | サイト | プレビュー版にテストネットのアドレスを載せ、コピーボタンと購入リンクを試す |
+
+手数料の回収は、永久ロックのコントラクトで `collect(<LP の NFT 番号>)` を呼ぶ（誰が呼んでも受取人に届く）。
+
+```bash
+cast send <Permanent lock のアドレス> "collect(uint256)" <LP の NFT 番号> --account deployer --rpc-url base_sepolia
+```
 
 `release()` は、Basescan の「Write Contract」から呼べます。コマンドなら次のとおりです。
 
@@ -84,7 +91,7 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 - [ ] `LIQUIDITY_MODE` と `START_FDV_ETH` は全コインで同じ値になっている
 - [ ] サイトの日本語固定（`sites/seppuku/wrangler.jsonc` の `FORCE_LANG`）を外した
 - [ ] `LP_RECIPIENTS` の二人のアドレスが正しい（本番はハードウェアウォレットを推奨）
-- [ ] LP をロックするロッカー（UNCX など）を決めた。ロックする場合は、二人分の NFT をそれぞれロックする
+- [ ] `LP_LOCK=permanent` になっている（永久ロック。取り消せない）
 
 ## 6. 本番
 

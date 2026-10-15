@@ -3,7 +3,8 @@
 #   デプロイしたウォレットが持つトークン全量で、Uniswap v3（手数料 1%）にプールを作る。
 #   LIQUIDITY_MODE=single：ETH なしの片側流動性（開始時の FDV = START_FDV_ETH）
 #   LIQUIDITY_MODE=full  ：トークン + LIQUIDITY_ETH の ETH をフルレンジで
-#   LP ポジション（NFT）は LP_RECIPIENTS（カンマ区切り。人数で均等に分けて人数分作る。空ならデプロイしたウォレット）へ。
+#   LP_LOCK=permanent（既定）なら、ポジションを永久ロックに預け、LP_RECIPIENTS は手数料の受取人になる。
+#   LP_LOCK=none なら、LP ポジション（NFT）は LP_RECIPIENTS（カンマ区切り。人数で均等に分けて人数分作る。空ならデプロイしたウォレット）へ。
 set -euo pipefail
 cd "$(dirname "$0")"
 source scripts-env.sh "$1" "$2"
@@ -26,7 +27,10 @@ else
 fi
 
 # shellcheck disable=SC2086
-forge script script/AddLiquidity.s.sol --rpc-url "$network" $signer_args --broadcast
+forge script script/AddLiquidity.s.sol --rpc-url "$network" $signer_args --broadcast $verify_args || {
+  # 送信は成功していて、ソースコードの検証の確認だけが失敗することがある（Blockscout の回数制限など）
+  echo "（注意）上でエラーが出ても、送信が成功していれば続きの表示を確認してください"
+}
 
 # 上のログの tokenId は送信前のシミュレーションの値。実際の番号を送信記録から表示する
 chain_id="$(cast chain-id --rpc-url "$( [ "$network" = base ] && echo "$BASE_RPC_URL" || echo "$BASE_SEPOLIA_RPC_URL" )")"

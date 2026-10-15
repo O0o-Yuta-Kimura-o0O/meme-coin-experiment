@@ -2,6 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {Script, console2} from "forge-std/Script.sol";
+import {VmSafe} from "forge-std/Vm.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {PermanentLPLock} from "../src/PermanentLPLock.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
@@ -54,6 +57,8 @@ interface IWETH is IERC20 {
 ///         どちらも、誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は中止する。
 ///         受取人（LP_RECIPIENTS、カンマ区切り）が複数なら、量を人数で均等に分け、同じ価格帯のポジション（NFT）を
 ///         人数分作る。量と価格帯が同じなので、買い手が払う ETH も取引手数料も、取引のたびに均等に分かれてたまる。
+///         LP_LOCK=permanent（既定）なら、作ったポジションをそのまま PermanentLPLock に預けて永久にロックし、
+///         受取人は手数料だけを受け取れる（元本は誰も引き出せない）。LP_LOCK=none ならポジションを受取人に直接渡す。
 ///         設定値は deploy.sh と同じく coins/<コイン名>/coin.env から add-liquidity.sh 経由で渡される。
 contract AddLiquidity is Script {
     uint24 public constant FEE = 10_000;
@@ -68,6 +73,7 @@ contract AddLiquidity is Script {
 
     struct Result {
         address pool;
+        address lock;
         uint256[] tokenIds;
         uint128[] liquidities;
         uint256 tokenUsed;
@@ -90,6 +96,7 @@ contract AddLiquidity is Script {
     function run() external {
         address token = vm.envAddress("TOKEN_ADDRESS");
         bool single = keccak256(bytes(vm.envOr("LIQUIDITY_MODE", string("full")))) == keccak256("single");
+        bool permanentLock = keccak256(bytes(vm.envOr("LP_LOCK", string("permanent")))) == keccak256("permanent");
 
         vm.startBroadcast();
         (, address sender,) = vm.readCallers();
@@ -103,16 +110,18 @@ contract AddLiquidity is Script {
                     tickLower: int24(vm.envInt("TICK_LOWER")),
                     tickUpper: int24(vm.envInt("TICK_UPPER")),
                     initSqrtPriceX96: uint160(vm.envUint("INIT_SQRT_PRICE_X96")),
-                    recipients: recipients
+                    recipients: recipients,
+                    permanentLock: permanentLock
                 })
             )
-            : addLiquidity(token, tokenAmount, vm.envUint("LIQUIDITY_ETH_WEI"), recipients);
+            : addLiquidity(token, tokenAmount, vm.envUint("LIQUIDITY_ETH_WEI"), recipients, permanentLock);
         vm.stopBroadcast();
 
         console2.log("Mode           :", single ? "single-sided (token only)" : "full range (token + ETH)");
         console2.log("Pool           :", r.pool);
+        if (r.lock != address(0)) console2.log("Permanent lock :", r.lock);
         for (uint256 i; i < r.tokenIds.length; i++) {
-            console2.log("LP NFT (simulated id):", r.tokenIds[i], "-> owner", recipients[i]);
+            console2.log("LP NFT (simulated id):", r.tokenIds[i], "-> fee recipient", recipients[i]);
         }
         console2.log("Token used     :", r.tokenUsed / 1e18);
         console2.log("ETH used (wei) :", r.ethUsed);
@@ -154,6 +163,7 @@ contract AddLiquidity is Script {
         int24 tickUpper;
         uint160 initSqrtPriceX96;
         address[] recipients;
+        bool permanentLock;
     }
 
     /// @notice 片側流動性：トークンだけで、開始価格より上（トークンが高くなる側）の全範囲にプールを作る
@@ -175,17 +185,43 @@ contract AddLiquidity is Script {
         require(tokenIs0 ? tick < p.tickLower : tick >= p.tickUpper, "range must be on the token side of the price");
 
         IERC20(p.token).approve(address(u.positionManager), p.tokenAmount);
-        _mintSingleSidedAll(r, u.positionManager, p, Pair(token0, token1, 0, 0, tokenIs0));
+        address holder = p.permanentLock ? _holder() : address(0);
+        _mintSingleSidedAll(r, u.positionManager, p, Pair(token0, token1, 0, 0, tokenIs0), holder);
+        if (p.permanentLock) _lockAll(r, u.positionManager, holder, p.recipients);
     }
 
-    function _mintSingleSidedAll(Result memory r, INonfungiblePositionManager pm, SingleSided memory p, Pair memory q)
-        internal
-    {
+    function _mintSingleSidedAll(
+        Result memory r,
+        INonfungiblePositionManager pm,
+        SingleSided memory p,
+        Pair memory q,
+        address holder
+    ) internal {
         uint256 n = p.recipients.length;
         r.tokenIds = new uint256[](n);
         r.liquidities = new uint128[](n);
         for (uint256 i; i < n; i++) {
-            _mintInto(r, i, pm, _singleSidedMint(p, _share(p.tokenAmount, n, i), p.recipients[i], q), q.tokenIs0);
+            address to = holder == address(0) ? p.recipients[i] : holder;
+            _mintInto(r, i, pm, _singleSidedMint(p, _share(p.tokenAmount, n, i), to, q), q.tokenIs0);
+        }
+    }
+
+    /// @notice ポジションを作った本人（broadcast 中は送信するウォレット、テストではこのコントラクト）
+    function _holder() internal returns (address) {
+        (VmSafe.CallerMode mode, address sender,) = vm.readCallers();
+        return mode == VmSafe.CallerMode.Broadcast || mode == VmSafe.CallerMode.RecurrentBroadcast
+            ? sender
+            : address(this);
+    }
+
+    /// @notice 永久ロックを作り、ポジションをすべて預ける。i 番目の手数料の受取人は beneficiaries[i]
+    function _lockAll(Result memory r, INonfungiblePositionManager pm, address holder, address[] memory beneficiaries)
+        internal
+    {
+        PermanentLPLock lock = new PermanentLPLock(address(pm));
+        r.lock = address(lock);
+        for (uint256 i; i < r.tokenIds.length; i++) {
+            IERC721(address(pm)).safeTransferFrom(holder, address(lock), r.tokenIds[i], abi.encode(beneficiaries[i]));
         }
     }
 
@@ -230,10 +266,13 @@ contract AddLiquidity is Script {
     }
 
     /// @notice 両側・フルレンジ：呼び出し元（broadcast 中はデプロイしたウォレット）が持つトークンと ETH でプールを作る
-    function addLiquidity(address token, uint256 tokenAmount, uint256 ethAmount, address[] memory recipients)
-        public
-        returns (Result memory r)
-    {
+    function addLiquidity(
+        address token,
+        uint256 tokenAmount,
+        uint256 ethAmount,
+        address[] memory recipients,
+        bool permanentLock
+    ) public returns (Result memory r) {
         require(tokenAmount > 0 && ethAmount > 0, "amounts must be > 0");
         require(recipients.length > 0, "no LP recipients");
         Uniswap memory u = uniswapFor(block.chainid);
@@ -249,14 +288,17 @@ contract AddLiquidity is Script {
         IWETH(WETH).deposit{value: ethAmount}();
         IERC20(WETH).approve(address(u.positionManager), ethAmount);
         IERC20(token).approve(address(u.positionManager), tokenAmount);
-        _mintFullRangeAll(r, u.positionManager, q, recipients);
+        address holder = permanentLock ? _holder() : address(0);
+        _mintFullRangeAll(r, u.positionManager, q, recipients, holder);
+        if (permanentLock) _lockAll(r, u.positionManager, holder, recipients);
     }
 
     function _mintFullRangeAll(
         Result memory r,
         INonfungiblePositionManager pm,
         Pair memory q,
-        address[] memory recipients
+        address[] memory recipients,
+        address holder
     ) internal {
         uint256 n = recipients.length;
         r.tokenIds = new uint256[](n);
@@ -266,7 +308,13 @@ contract AddLiquidity is Script {
                 r,
                 i,
                 pm,
-                _fullRangeMint(q.token0, q.token1, _share(q.amount0, n, i), _share(q.amount1, n, i), recipients[i]),
+                _fullRangeMint(
+                    q.token0,
+                    q.token1,
+                    _share(q.amount0, n, i),
+                    _share(q.amount1, n, i),
+                    holder == address(0) ? recipients[i] : holder
+                ),
                 q.tokenIs0
             );
         }

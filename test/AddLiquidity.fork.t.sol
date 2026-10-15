@@ -5,6 +5,7 @@ import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MemeToken} from "../src/MemeToken.sol";
 import {AddLiquidity, INonfungiblePositionManager} from "../script/AddLiquidity.s.sol";
+import {PermanentLPLock} from "../src/PermanentLPLock.sol";
 
 interface IPositionManagerFull {
     struct DecreaseLiquidityParams {
@@ -24,6 +25,13 @@ interface IPositionManagerFull {
 
     function decreaseLiquidity(DecreaseLiquidityParams calldata params) external payable returns (uint256, uint256);
     function collect(CollectParams calldata params) external payable returns (uint256 amount0, uint256 amount1);
+}
+
+interface IPositions {
+    function positions(uint256 tokenId)
+        external
+        view
+        returns (uint96, address, address, address, uint24, int24, int24, uint128, uint256, uint256, uint128, uint128);
 }
 
 interface ISwapRouter02 {
@@ -68,7 +76,7 @@ contract AddLiquidityForkTest is Test {
     }
 
     function test_CreatesPoolAndMintsFullRangePosition() public {
-        AddLiquidity.Result memory r = script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
+        AddLiquidity.Result memory r = script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me(), false);
         assertTrue(r.pool != address(0));
         assertGt(r.liquidities[0], 0);
         assertGe(r.tokenUsed, LP_TOKENS * 99 / 100);
@@ -78,7 +86,7 @@ contract AddLiquidityForkTest is Test {
     }
 
     function test_BuyAndSellThroughUniswap() public {
-        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
+        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me(), false);
 
         // 購入：0.001 ETH → トークン（理論値 約 4,240万枚。手数料 1% とスリッページ込みで 4,000万枚以上）
         vm.deal(buyer, 1 ether);
@@ -122,7 +130,7 @@ contract AddLiquidityForkTest is Test {
         npm.createAndInitializePoolIfNecessary(t0, t1, 10_000, uint160(1 << 96));
 
         vm.expectRevert(bytes("pool already initialized at a different price"));
-        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
+        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me(), false);
     }
 
     // ---------- 片側流動性（ETH を入れない） ----------
@@ -135,10 +143,17 @@ contract AddLiquidityForkTest is Test {
     }
 
     function _singleSided(address at) internal returns (MemeToken t, AddLiquidity.Result memory r) {
-        return _singleSided(at, _me());
+        return _singleSided(at, _me(), false);
     }
 
     function _singleSided(address at, address[] memory recipients)
+        internal
+        returns (MemeToken t, AddLiquidity.Result memory r)
+    {
+        return _singleSided(at, recipients, false);
+    }
+
+    function _singleSided(address at, address[] memory recipients, bool lock)
         internal
         returns (MemeToken t, AddLiquidity.Result memory r)
     {
@@ -162,7 +177,8 @@ contract AddLiquidityForkTest is Test {
                 tickLower: lo,
                 tickUpper: hi,
                 initSqrtPriceX96: sqrtP,
-                recipients: recipients
+                recipients: recipients,
+                permanentLock: lock
             })
         );
     }
@@ -265,5 +281,104 @@ contract AddLiquidityForkTest is Test {
 
     function test_TwoOwners_TokenIsToken1() public {
         _checkTwoOwnersSplitEvenly(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE));
+    }
+
+    // ---------- 永久ロック（元本は誰も引き出せない。手数料だけ受取人に届く） ----------
+
+    function _positionLiquidity(INonfungiblePositionManager npm, uint256 id) internal view returns (uint128 liq) {
+        (,,,,,,, liq,,,,) = IPositions(address(npm)).positions(id);
+    }
+
+    address lockKimura = makeAddr("kimura");
+    address lockTorima = makeAddr("torima");
+
+    function _lockedPair(address at) internal returns (MemeToken t, AddLiquidity.Result memory r) {
+        address[] memory owners = new address[](2);
+        owners[0] = lockKimura;
+        owners[1] = lockTorima;
+        (t, r) = _singleSided(at, owners, true);
+    }
+
+    function _assertLockedAndUnwithdrawable(AddLiquidity.Result memory r) internal {
+        INonfungiblePositionManager npm = script.uniswapFor(block.chainid).positionManager;
+        PermanentLPLock lock = PermanentLPLock(r.lock);
+        // NFT はロックが持ち、受取人として二人が登録されている
+        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenIds[0]), r.lock);
+        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenIds[1]), r.lock);
+        assertEq(lock.beneficiaryOf(r.tokenIds[0]), lockKimura);
+        assertEq(lock.beneficiaryOf(r.tokenIds[1]), lockTorima);
+        // 二人とも NFT を持っていないので、元本を引き出せない
+        vm.prank(lockKimura);
+        vm.expectRevert();
+        IPositionManagerFull(address(npm)).decreaseLiquidity(
+            IPositionManagerFull.DecreaseLiquidityParams(r.tokenIds[0], 1, 0, 0, block.timestamp)
+        );
+    }
+
+    function _assertFeesSplitAndPrincipalStays(AddLiquidity.Result memory r, address at) internal {
+        INonfungiblePositionManager npm = script.uniswapFor(block.chainid).positionManager;
+        PermanentLPLock lock = PermanentLPLock(r.lock);
+        uint128 liqBefore = _positionLiquidity(npm, r.tokenIds[0]);
+        // 誰が回収を実行しても、手数料は受取人に半分ずつ届く
+        vm.prank(makeAddr("anyone"));
+        (uint256 k0, uint256 k1) = lock.collect(r.tokenIds[0]);
+        (uint256 m0, uint256 m1) = lock.collect(r.tokenIds[1]);
+        assertGt(k0 + k1, 0);
+        assertEq(k0, m0);
+        assertEq(k1, m1);
+        assertGt(IERC20(WETH).balanceOf(lockKimura), 0);
+        assertEq(IERC20(WETH).balanceOf(lockKimura), IERC20(WETH).balanceOf(lockTorima));
+        // 元本（流動性）は減らない
+        assertEq(_positionLiquidity(npm, r.tokenIds[0]), liqBefore, "principal stays in the pool");
+        console2.log("fees to each (WETH wei, token wei):", at < WETH ? k1 : k0, at < WETH ? k0 : k1);
+    }
+
+    function _assertOnlyBeneficiaryCanChange(MemeToken t, AddLiquidity.Result memory r) internal {
+        PermanentLPLock lock = PermanentLPLock(r.lock);
+        vm.prank(lockTorima);
+        vm.expectRevert(PermanentLPLock.NotBeneficiary.selector);
+        lock.setBeneficiary(r.tokenIds[0], lockTorima);
+        address newWallet = makeAddr("kimura-hardware");
+        vm.prank(lockKimura);
+        lock.setBeneficiary(r.tokenIds[0], newWallet);
+        _buy(t, 0.001 ether);
+        lock.collect(r.tokenIds[0]);
+        assertGt(IERC20(WETH).balanceOf(newWallet), 0);
+    }
+
+    function _checkPermanentLock(address at) internal {
+        (MemeToken t, AddLiquidity.Result memory r) = _lockedPair(at);
+        _assertLockedAndUnwithdrawable(r);
+        // 売買は普段どおりできる
+        uint256 bought = _buy(t, 0.003 ether);
+        _sell(t, buyer, bought / 3);
+        _assertFeesSplitAndPrincipalStays(r, at);
+        _assertOnlyBeneficiaryCanChange(t, r);
+    }
+
+    function test_PermanentLock_TokenIsToken0() public {
+        _checkPermanentLock(address(0x1111111111111111111111111111111111111111));
+    }
+
+    function test_PermanentLock_TokenIsToken1() public {
+        _checkPermanentLock(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE));
+    }
+
+    function test_PermanentLock_TradingContinuesIfBeneficiaryKeysAreLost() public {
+        address[] memory lost = new address[](2);
+        lost[0] = address(0xdead);
+        lost[1] = address(0xbeef);
+        (MemeToken t, AddLiquidity.Result memory r) =
+            _singleSided(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), lost, true);
+        uint256 bought = _buy(t, 0.002 ether);
+        uint256 back = _sell(t, buyer, bought);
+        assertGt(back, 0.00194 ether);
+        PermanentLPLock(r.lock).collect(r.tokenIds[0]); // 受取人が鍵を失っていても、呼び出し自体は誰でもできる
+    }
+
+    function test_PermanentLock_OnlyAcceptsUniswapPositions() public {
+        PermanentLPLock lock = new PermanentLPLock(address(script.uniswapFor(block.chainid).positionManager));
+        vm.expectRevert(PermanentLPLock.NotPositionManager.selector);
+        lock.onERC721Received(address(this), address(this), 1, abi.encode(address(this)));
     }
 }
