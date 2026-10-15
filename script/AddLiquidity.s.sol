@@ -112,7 +112,7 @@ contract AddLiquidity is Script {
         console2.log("Mode           :", single ? "single-sided (token only)" : "full range (token + ETH)");
         console2.log("Pool           :", r.pool);
         for (uint256 i; i < r.tokenIds.length; i++) {
-            console2.log("LP NFT tokenId :", r.tokenIds[i], "-> owner", recipients[i]);
+            console2.log("LP NFT (simulated id):", r.tokenIds[i], "-> owner", recipients[i]);
         }
         console2.log("Token used     :", r.tokenUsed / 1e18);
         console2.log("ETH used (wei) :", r.ethUsed);

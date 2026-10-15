@@ -27,3 +27,9 @@ fi
 
 # shellcheck disable=SC2086
 forge script script/AddLiquidity.s.sol --rpc-url "$network" $signer_args --broadcast
+
+# 上のログの tokenId は送信前のシミュレーションの値。実際の番号を送信記録から表示する
+chain_id="$(cast chain-id --rpc-url "$( [ "$network" = base ] && echo "$BASE_RPC_URL" || echo "$BASE_SEPOLIA_RPC_URL" )")"
+echo ""
+echo "== 実際に作られた LP ポジション（これを記録する）=="
+python3 script/show_lp_nfts.py "$chain_id"
