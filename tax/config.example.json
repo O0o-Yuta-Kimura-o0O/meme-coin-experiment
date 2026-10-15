@@ -14,7 +14,7 @@
       "symbol": "SEPPUKU",
       "token": "0x...",
       "pool": "0x...",
-      "lp_positions": { "LP の NFT 番号": "member1", "LP の NFT 番号 ": "member2" },
+      "lp_positions": { "100001": "member1", "100002": "member2" },
       "vestings": { "0x...（member1 の半減期ロック）": "member1", "0x...（member2 の半減期ロック）": "member2" }
     }
   ]
