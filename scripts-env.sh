@@ -8,6 +8,10 @@ cfg="coins/$coin/coin.env"
 
 set -a
 [ -f .env ] && source .env
+# .env がなくても動くよう、Base 公式の接続先を既定にする
+BASE_RPC_URL="${BASE_RPC_URL:-https://mainnet.base.org}"
+BASE_SEPOLIA_RPC_URL="${BASE_SEPOLIA_RPC_URL:-https://sepolia.base.org}"
+ETHERSCAN_API_KEY="${ETHERSCAN_API_KEY:-}"
 source "$cfg"
 # テストネットでは coin.testnet.env で上書きする（半減期の短縮など）
 if [ "$network" = "base_sepolia" ] && [ -f "coins/$coin/coin.testnet.env" ]; then
@@ -27,8 +31,15 @@ confirm_mainnet() {
 # 署名の方法（通常は cast wallet import で登録したキーストア）。
 # ローカルの試験チェーン（anvil）で通しのリハーサルをするときだけ、FORGE_SIGNER_ARGS で差し替える。
 signer_args="${FORGE_SIGNER_ARGS:---account ${DEPLOYER_ACCOUNT:-deployer}}"
-verify_args="--verify"
+# ソースコードの検証：Etherscan（Basescan）の API キーがあればそれを使い、なければ Blockscout で検証する。
+# Etherscan の API は Base / Base Sepolia が有料プラン専用のため、キーなしでも検証できる Blockscout を既定にする。
 # 注意：「[ 条件 ] && 代入」の形にすると、条件が偽のときに set -e でスクリプト全体が黙って止まる
+verify_args="--verify"
 if [ -n "${NO_VERIFY:-}" ]; then
   verify_args=""
+elif [ -z "${ETHERSCAN_API_KEY:-}" ]; then
+  case "$network" in
+    base_sepolia) verify_args="--verify --verifier blockscout --verifier-url https://base-sepolia.blockscout.com/api/" ;;
+    base) verify_args="--verify --verifier blockscout --verifier-url https://base.blockscout.com/api/" ;;
+  esac
 fi

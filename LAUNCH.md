@@ -8,9 +8,9 @@
 |---|---|
 | デプロイ専用のウォレットを作る | MetaMask か Rabby で新しいアカウントを作る。ほかの用途には使わない |
 | そのウォレットを Foundry に登録する | 下のコマンドを実行し、秘密鍵と、保護用のパスワードを入力する |
-| テスト用の ETH を入手する | Base Sepolia の faucet から 0.05 ETH ほど（デプロイと動作確認用。片側流動性ならプールに ETH は入れない） |
-| Etherscan の API キーを取る | etherscan.io の無料アカウントで発行し、`.env` の `ETHERSCAN_API_KEY` に書く（Base と Base Sepolia の両方で使える） |
-| `.env` を作る | `cp .env.example .env` |
+| テスト用の ETH を入手する | [Coinbase の faucet](https://portal.cdp.coinbase.com/products/faucet) で 0.001 ETH ほど（1回 0.0001 ETH × 10回）。デプロイと流動性の追加は合わせて 0.0001 ETH 未満で済む |
+| （任意）Etherscan の API キー | なくてもよい。キーがなければ、ソースコードは **Blockscout** で自動的に検証・公開される。Etherscan の API は Base が有料プラン専用のため、Basescan での検証は、必要になったら Basescan の画面から手作業で行う |
+| （任意）`.env` を作る | `cp .env.example .env`。なくても Base 公式の接続先で動く |
 
 ```bash
 cast wallet import deployer --interactive
@@ -41,7 +41,7 @@ cast wallet address --account deployer
 ./deploy.sh seppuku base_sepolia
 ```
 
-表示された `Token` と、二人分の `HalvingVesting`（それぞれの受取人も表示される）のアドレスを、`coins/seppuku/deployments.md` に記録します。Basescan（テストネットは sepolia.basescan.org）でソースコードが検証済みになっているかも確認します。
+表示された `Token` と、二人分の `HalvingVesting`（それぞれの受取人も表示される）のアドレスを、`coins/seppuku/deployments.md` に記録します。Blockscout（テストネットは base-sepolia.blockscout.com）でソースコードが検証済みになっているかも確認します。
 
 ## 3. 流動性を追加する（ここで売買できるようになる）
 
