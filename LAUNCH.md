@@ -56,7 +56,8 @@ SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います
 - 買われるほど価格が上がり、プールに ETH がたまる。売られても、買った人が入れた ETH が戻るだけで、価格は開始価格より下がらない
 - 複数のコインで `START_FDV_ETH` を同じにすれば、開始条件をそろえられる
 - 誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は、自動で中止する
-- 表示された `Pool` と `LP NFT tokenId` を `deployments.md` に記録する
+- `LP_RECIPIENTS` に二人のアドレスを書くと、同じ価格帯のポジション（NFT）を二人分作り、それぞれのウォレットに送る。買い手が払う ETH も取引手数料も、取引のたびに半分ずつ各自のポジションにたまる
+- 表示された `Pool` と、二人分の `LP NFT tokenId` を `deployments.md` に記録する
 
 両側（トークンと ETH を両方入れる）にしたい場合は、`LIQUIDITY_MODE=full` と `LIQUIDITY_ETH` を設定します。
 
@@ -82,7 +83,8 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 - [ ] `TEAM_WALLETS` の二人のアドレスが正しい（後から変更できない）。本番はハードウェアウォレットを推奨
 - [ ] `LIQUIDITY_MODE` と `START_FDV_ETH` は全コインで同じ値になっている
 - [ ] サイトの日本語固定（`sites/seppuku/wrangler.jsonc` の `FORCE_LANG`）を外した
-- [ ] LP をロックするロッカー（UNCX など）を決めた
+- [ ] `LP_RECIPIENTS` の二人のアドレスが正しい（本番はハードウェアウォレットを推奨）
+- [ ] LP をロックするロッカー（UNCX など）を決めた。ロックする場合は、二人分の NFT をそれぞれロックする
 
 ## 6. 本番
 

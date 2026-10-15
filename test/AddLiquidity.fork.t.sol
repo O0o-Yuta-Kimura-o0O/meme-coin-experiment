@@ -1,10 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MemeToken} from "../src/MemeToken.sol";
 import {AddLiquidity, INonfungiblePositionManager} from "../script/AddLiquidity.s.sol";
+
+interface IPositionManagerFull {
+    struct DecreaseLiquidityParams {
+        uint256 tokenId;
+        uint128 liquidity;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        uint256 deadline;
+    }
+
+    struct CollectParams {
+        uint256 tokenId;
+        address recipient;
+        uint128 amount0Max;
+        uint128 amount1Max;
+    }
+
+    function decreaseLiquidity(DecreaseLiquidityParams calldata params) external payable returns (uint256, uint256);
+    function collect(CollectParams calldata params) external payable returns (uint256 amount0, uint256 amount1);
+}
 
 interface ISwapRouter02 {
     struct ExactInputSingleParams {
@@ -48,17 +68,17 @@ contract AddLiquidityForkTest is Test {
     }
 
     function test_CreatesPoolAndMintsFullRangePosition() public {
-        AddLiquidity.Result memory r = script.addLiquidity(address(token), LP_TOKENS, LP_ETH, address(this));
+        AddLiquidity.Result memory r = script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
         assertTrue(r.pool != address(0));
-        assertGt(r.liquidity, 0);
+        assertGt(r.liquidities[0], 0);
         assertGe(r.tokenUsed, LP_TOKENS * 99 / 100);
         assertGe(r.ethUsed, LP_ETH * 99 / 100);
         INonfungiblePositionManager npm = script.uniswapFor(block.chainid).positionManager;
-        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenId), address(this));
+        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenIds[0]), address(this));
     }
 
     function test_BuyAndSellThroughUniswap() public {
-        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, address(this));
+        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
 
         // 購入：0.001 ETH → トークン（理論値 約 4,240万枚。手数料 1% とスリッページ込みで 4,000万枚以上）
         vm.deal(buyer, 1 ether);
@@ -102,14 +122,26 @@ contract AddLiquidityForkTest is Test {
         npm.createAndInitializePoolIfNecessary(t0, t1, 10_000, uint160(1 << 96));
 
         vm.expectRevert(bytes("pool already initialized at a different price"));
-        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, address(this));
+        script.addLiquidity(address(token), LP_TOKENS, LP_ETH, _me());
     }
 
     // ---------- 片側流動性（ETH を入れない） ----------
 
     uint256 constant SUPPLY = 1_000_000_000e18;
 
+    function _me() internal view returns (address[] memory list) {
+        list = new address[](1);
+        list[0] = address(this);
+    }
+
     function _singleSided(address at) internal returns (MemeToken t, AddLiquidity.Result memory r) {
+        return _singleSided(at, _me());
+    }
+
+    function _singleSided(address at, address[] memory recipients)
+        internal
+        returns (MemeToken t, AddLiquidity.Result memory r)
+    {
         deployCodeTo("MemeToken.sol:MemeToken", abi.encode("Test Coin", "TEST", SUPPLY, address(script)), at);
         t = MemeToken(at);
         // 開始時の FDV = 1 ETH（1 トークン ≈ 1e-9 ETH）
@@ -130,7 +162,7 @@ contract AddLiquidityForkTest is Test {
                 tickLower: lo,
                 tickUpper: hi,
                 initSqrtPriceX96: sqrtP,
-                recipient: address(this)
+                recipients: recipients
             })
         );
     }
@@ -181,5 +213,57 @@ contract AddLiquidityForkTest is Test {
 
     function test_SingleSided_TokenIsToken1() public {
         _checkSingleSided(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE));
+    }
+
+    // ---------- 受取人が二人（Team SEPPUKU の 50/50） ----------
+
+    /// @dev ポジションの中身（元本 + 手数料）をすべて引き出し、受け取った WETH を返す
+    function _withdrawAll(INonfungiblePositionManager npm, uint256 id, uint128 liq, address owner)
+        internal
+        returns (uint256 wethOut)
+    {
+        IPositionManagerFull pm = IPositionManagerFull(address(npm));
+        vm.startPrank(owner);
+        pm.decreaseLiquidity(IPositionManagerFull.DecreaseLiquidityParams(id, liq, 0, 0, block.timestamp));
+        uint256 before = IERC20(WETH).balanceOf(owner);
+        pm.collect(IPositionManagerFull.CollectParams(id, owner, type(uint128).max, type(uint128).max));
+        vm.stopPrank();
+        return IERC20(WETH).balanceOf(owner) - before;
+    }
+
+    function _checkTwoOwnersSplitEvenly(address at) internal {
+        address kimura = makeAddr("kimura");
+        address torima = makeAddr("torima");
+        address[] memory owners = new address[](2);
+        owners[0] = kimura;
+        owners[1] = torima;
+        (MemeToken t, AddLiquidity.Result memory r) = _singleSided(at, owners);
+
+        INonfungiblePositionManager npm = script.uniswapFor(block.chainid).positionManager;
+        assertEq(r.tokenIds.length, 2);
+        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenIds[0]), kimura);
+        assertEq(IERC721Owner(address(npm)).ownerOf(r.tokenIds[1]), torima);
+        assertEq(r.liquidities[0], r.liquidities[1], "same amount and range -> same liquidity");
+        assertEq(r.ethUsed, 0);
+
+        // 何人かが買い、一部を売る（代金と手数料が二つのポジションにたまる）
+        uint256 bought = _buy(t, 0.003 ether);
+        _sell(t, buyer, bought / 3);
+
+        uint256 k = _withdrawAll(npm, r.tokenIds[0], r.liquidities[0], kimura);
+        uint256 m = _withdrawAll(npm, r.tokenIds[1], r.liquidities[1], torima);
+        console2.log("WETH to owner 1 (wei):", k);
+        console2.log("WETH to owner 2 (wei):", m);
+        assertGt(k, 0);
+        // 二人の受け取りは、端数（数 wei）を除いて同じ
+        assertApproxEqAbs(k, m, 10);
+    }
+
+    function test_TwoOwners_TokenIsToken0() public {
+        _checkTwoOwnersSplitEvenly(address(0x1111111111111111111111111111111111111111));
+    }
+
+    function test_TwoOwners_TokenIsToken1() public {
+        _checkTwoOwnersSplitEvenly(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE));
     }
 }

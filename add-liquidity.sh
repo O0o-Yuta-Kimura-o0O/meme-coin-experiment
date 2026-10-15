@@ -3,7 +3,7 @@
 #   デプロイしたウォレットが持つトークン全量で、Uniswap v3（手数料 1%）にプールを作る。
 #   LIQUIDITY_MODE=single：ETH なしの片側流動性（開始時の FDV = START_FDV_ETH）
 #   LIQUIDITY_MODE=full  ：トークン + LIQUIDITY_ETH の ETH をフルレンジで
-#   LP ポジション（NFT）は LP_RECIPIENT（空ならデプロイしたウォレット）へ。
+#   LP ポジション（NFT）は LP_RECIPIENTS（カンマ区切り。人数で均等に分けて人数分作る。空ならデプロイしたウォレット）へ。
 set -euo pipefail
 cd "$(dirname "$0")"
 source scripts-env.sh "$1" "$2"
