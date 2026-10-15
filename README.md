@@ -61,6 +61,7 @@ research/                 研究の設計、データ、分析
   data/<コイン名>/snapshots.csv   6時間ごとの自動記録
   scripts/fetch_web_events.py    サイトの閲覧イベントを取り込むスクリプト
   data/<コイン名>/web_events.csv  閲覧イベント（訪問者 ID は公開用にハッシュし直したもの）
+tax/                      税務申告用の取引記録をメンバーごとの CSV で作り続けるツール（設定と出力は private/tax/。tax/README.md 参照）
 sites/                    コインごとの Web ページと閲覧解析（Cloudflare Workers。sites/README.md 参照）
 .github/workflows/        GitHub Actions（データの自動収集）
 ```

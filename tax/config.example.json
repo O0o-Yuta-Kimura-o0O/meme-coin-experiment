@@ -1,0 +1,21 @@
+{
+  "network": "base",
+  "rpc": "https://mainnet.base.org",
+  "position_manager": "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
+  "start_block": 0,
+  "output_dir": "mainnet",
+  "owners": {
+    "member1": { "name": "メンバー1の名前", "wallets": ["0x...（デプロイ用）", "0x...（受け取り用）"] },
+    "member2": { "name": "メンバー2の名前", "wallets": ["0x..."] },
+    "community": { "name": "コミュニティ用（共有）", "wallets": ["0x..."] }
+  },
+  "coins": [
+    {
+      "symbol": "SEPPUKU",
+      "token": "0x...",
+      "pool": "0x...",
+      "lp_positions": { "LP の NFT 番号": "member1", "LP の NFT 番号 ": "member2" },
+      "vestings": { "0x...（member1 の半減期ロック）": "member1", "0x...（member2 の半減期ロック）": "member2" }
+    }
+  ]
+}
