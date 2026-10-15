@@ -8,6 +8,10 @@
 - 「どのウォレットが誰のものか」を書いた設定ファイルと、出力した CSV は **`private/tax/` に置く**。`private/` は Git の対象外なので、GitHub には上がらない
 - 設定ファイルのひな形：[config.example.json](config.example.json)
 
+## 自動実行（非公開リポジトリ）
+
+`private/tax/` は、非公開リポジトリ **`seppuku-tax-ledger`**（GitHub、永久に非公開）の手元の作業場所です。GitHub Actions が **6 時間ごと**に記録を更新してコミットします。手元で見る前に `cd private/tax && git pull` で最新にしてください。`ledger.py` を直したら、`private/tax/ledger.py` にもコピーします。
+
 ## 使い方
 
 ```bash
