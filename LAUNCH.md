@@ -8,7 +8,7 @@
 |---|---|
 | デプロイ専用のウォレットを作る | MetaMask か Rabby で新しいアカウントを作る。ほかの用途には使わない |
 | そのウォレットを Foundry に登録する | 下のコマンドを実行し、秘密鍵と、保護用のパスワードを入力する |
-| テスト用の ETH を入手する | Base Sepolia の faucet から 0.1 ETH ほど（デプロイ用と流動性 0.02 ETH 用） |
+| テスト用の ETH を入手する | Base Sepolia の faucet から 0.05 ETH ほど（デプロイと動作確認用。片側流動性ならプールに ETH は入れない） |
 | Etherscan の API キーを取る | etherscan.io の無料アカウントで発行し、`.env` の `ETHERSCAN_API_KEY` に書く（Base と Base Sepolia の両方で使える） |
 | `.env` を作る | `cp .env.example .env` |
 
@@ -24,8 +24,8 @@ cast wallet address --account deployer
 
 ## 1. 設定を確認する
 
-- `coins/seppuku/coin.env`：名前、発行枚数、配分、`TEAM_WALLET`、`COMMUNITY_WALLET`、`LIQUIDITY_ETH`
-- `coins/seppuku/coin.testnet.env`：テストネットだけの上書き（半減期を1時間単位に短縮、流動性 0.02 ETH）
+- `coins/seppuku/coin.env`：名前、発行枚数、配分、`TEAM_WALLET`、`COMMUNITY_WALLET`、流動性の方式（`LIQUIDITY_MODE`）と開始時の時価総額（`START_FDV_ETH`）
+- `coins/seppuku/coin.testnet.env`：テストネットだけの上書き（半減期を1時間単位に短縮）
 
 ## 2. デプロイする
 
@@ -49,17 +49,23 @@ cast wallet address --account deployer
 ./add-liquidity.sh seppuku base_sepolia <Token のアドレス>
 ```
 
-- デプロイしたウォレットが持つトークン全量（90%）と、`LIQUIDITY_ETH` の ETH で、Uniswap v3 にプールを作る（手数料 1%、フルレンジ）
-- 初期価格は「入れた ETH ÷ 入れたトークン」で決まるので、全コインで同じ条件にそろえられる
+SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います。
+
+- ETH を入れず、デプロイしたウォレットが持つトークン全量（90%）だけでプールを作る（Uniswap v3、手数料 1%）
+- 開始価格 = `START_FDV_ETH` ÷ 発行枚数。例：FDV 1 ETH・10億枚なら、1枚 ≈ 0.000000001 ETH
+- 買われるほど価格が上がり、プールに ETH がたまる。売られても、買った人が入れた ETH が戻るだけで、価格は開始価格より下がらない
+- 複数のコインで `START_FDV_ETH` を同じにすれば、開始条件をそろえられる
 - 誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は、自動で中止する
-- 表示された `Pool` と `LP NFT tokenId` も `deployments.md` に記録する
+- 表示された `Pool` と `LP NFT tokenId` を `deployments.md` に記録する
+
+両側（トークンと ETH を両方入れる）にしたい場合は、`LIQUIDITY_MODE=full` と `LIQUIDITY_ETH` を設定します。
 
 ## 4. 動作を確認する（テストネット）
 
 | 確認すること | 方法 |
 |---|---|
-| 買える | Uniswap の画面（テストネット）か、別のウォレットからスワップ。0.001 ETH で約4,200万枚が目安（流動性 0.02 ETH の場合） |
-| 売れる | 買った分を売り戻す。往復で手数料 2% ほど目減りする |
+| 買える | Uniswap の画面（テストネット）か、別のウォレットからスワップ。0.001 ETH で約98万枚が目安（開始時の FDV 1 ETH の場合）。`cast send` で試す場合、最初の購入はガスの見積もりが足りずに失敗することがあるので、`--gas-limit 500000` を付ける |
+| 売れる | 買った分を売り戻す。往復で手数料 2% ほど目減りする。プールにある ETH（買った人が入れた分）より多くは出てこない |
 | 半減期 | 1時間後に `release()` を呼ぶと、チーム用ウォレットに50%が届く。以後1時間ごとに残りの半分、3時間後に全量 |
 | サイト | プレビュー版にテストネットのアドレスを載せ、コピーボタンと購入リンクを試す |
 
@@ -74,7 +80,7 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 - [ ] テストネットで 2〜4 をすべて確認した
 - [ ] 弁護士に相談した（暗号資産交換業に当たらないか）
 - [ ] `TEAM_WALLET` はハードウェアウォレットか Safe のマルチシグになっている（後から変更できない）
-- [ ] `LIQUIDITY_ETH` は全コインで同じ値になっている
+- [ ] `LIQUIDITY_MODE` と `START_FDV_ETH` は全コインで同じ値になっている
 - [ ] サイトの日本語固定（`sites/seppuku/wrangler.jsonc` の `FORCE_LANG`）を外した
 - [ ] LP をロックするロッカー（UNCX など）を決めた
 

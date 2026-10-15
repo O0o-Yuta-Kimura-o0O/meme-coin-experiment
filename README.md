@@ -45,7 +45,8 @@ src/HalvingVesting.sol    半減期型のチーム分ロック（全コイン共
 script/Deploy.s.sol       デプロイと配分を一括で行うスクリプト
 test/MemeCoin.t.sol       テスト
 deploy.sh                 コインを指定してデプロイするラッパー
-add-liquidity.sh          Uniswap v3 にプールを作り流動性を入れるラッパー（script/AddLiquidity.s.sol）
+add-liquidity.sh          Uniswap v3 にプールを作り流動性を入れるラッパー（script/AddLiquidity.s.sol）。片側（ETH なし）と両側を選べる
+script/liquidity_params.py  片側流動性の価格帯と初期価格を、開始時の時価総額から計算する
 scripts-env.sh            上の2つが読み込む共通処理（coin.env / coin.testnet.env の読み込み、本番の確認）
 .env.example              全コイン共通の秘密情報（RPC、API キー）のテンプレート
 coins/
@@ -80,10 +81,10 @@ Foundry の準備、デプロイ、流動性の追加、テストネットでの
 forge test
 ```
 
-Base Sepolia を複製して、プールの作成・購入・売却まで確かめるテスト（ネットワークが必要）:
+Base Sepolia を複製して、プールの作成・購入・売却まで確かめるテスト（ネットワークが必要。片側流動性の価格帯の計算に Python を呼ぶので `--ffi` を付ける）:
 
 ```bash
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org forge test --match-contract Fork -vv
+BASE_SEPOLIA_RPC_URL=https://sepolia.base.org forge test --match-contract Fork --ffi -vv
 ```
 
 ## 安全性について

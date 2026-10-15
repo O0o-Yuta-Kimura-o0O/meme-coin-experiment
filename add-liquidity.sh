@@ -1,14 +1,29 @@
 #!/usr/bin/env bash
 # 使い方: ./add-liquidity.sh <コイン名> <base_sepolia|base> <トークンのアドレス>
-#   デプロイしたウォレットが持つトークン全量と、coin.env の LIQUIDITY_ETH の ETH で
-#   Uniswap v3 にプール（手数料 1%、フルレンジ）を作る。LP ポジション（NFT）は LP_RECIPIENT へ。
+#   デプロイしたウォレットが持つトークン全量で、Uniswap v3（手数料 1%）にプールを作る。
+#   LIQUIDITY_MODE=single：ETH なしの片側流動性（開始時の FDV = START_FDV_ETH）
+#   LIQUIDITY_MODE=full  ：トークン + LIQUIDITY_ETH の ETH をフルレンジで
+#   LP ポジション（NFT）は LP_RECIPIENT（空ならデプロイしたウォレット）へ。
 set -euo pipefail
 cd "$(dirname "$0")"
 source scripts-env.sh "$1" "$2"
 export TOKEN_ADDRESS="${3:?使い方: ./add-liquidity.sh <コイン名> <base_sepolia|base> <トークンのアドレス>}"
-export LIQUIDITY_ETH_WEI
-LIQUIDITY_ETH_WEI="$(cast to-wei "$LIQUIDITY_ETH")"
+export LIQUIDITY_MODE="${LIQUIDITY_MODE:-full}"
 
-confirm_mainnet "$LIQUIDITY_ETH ETH と全トークンで流動性を追加"
+if [ "$LIQUIDITY_MODE" = "single" ]; then
+  : "${START_FDV_ETH:?coin.env に START_FDV_ETH（開始時の時価総額、ETH 建て）を設定してください}"
+  supply_wei="$(cast to-wei "$TOTAL_SUPPLY")"
+  # 価格帯と初期価格を計算して環境変数にする（TICK_LOWER / TICK_UPPER / INIT_SQRT_PRICE_X96）
+  while IFS='=' read -r key value; do
+    export "$key=$value"
+  done < <(python3 script/liquidity_params.py "$TOKEN_ADDRESS" "$supply_wei" "$START_FDV_ETH")
+  echo "片側流動性：開始時の FDV ${START_FDV_ETH} ETH、tick ${TICK_LOWER} 〜 ${TICK_UPPER}"
+  confirm_mainnet "ETH なしの片側流動性（開始時の FDV ${START_FDV_ETH} ETH）でプールを作成"
+else
+  export LIQUIDITY_ETH_WEI
+  LIQUIDITY_ETH_WEI="$(cast to-wei "$LIQUIDITY_ETH")"
+  confirm_mainnet "$LIQUIDITY_ETH ETH と全トークンで流動性を追加"
+fi
+
 # shellcheck disable=SC2086
 forge script script/AddLiquidity.s.sol --rpc-url "$network" $signer_args --broadcast

@@ -46,10 +46,12 @@ interface IWETH is IERC20 {
     function deposit() external payable;
 }
 
-/// @notice Uniswap v3 にプールを作り、トークン全量と ETH をフルレンジで入れる。
-///         - 手数料 1%（tickSpacing 200）、価格帯はフルレンジ
-///         - 初期価格 = 入れる ETH ÷ 入れるトークン量（全コインで同じ条件にそろえられる）
-///         - 誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は中止する
+/// @notice Uniswap v3（手数料 1%、tickSpacing 200）にプールを作り、流動性を入れる。2つの方式がある。
+///         - single（片側流動性）：ETH を入れず、トークンだけを「開始価格より上」の全範囲に置く。
+///           買われるほど価格が上がり ETH がたまる。価格は開始価格より下がらない。
+///           価格帯（TICK_LOWER / TICK_UPPER）と初期価格は script/liquidity_params.py が開始時の FDV から計算する。
+///         - full（両側・フルレンジ）：トークンと ETH を両方入れる。初期価格 = 入れる ETH ÷ 入れるトークン量。
+///         どちらも、誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は中止する。
 ///         設定値は deploy.sh と同じく coins/<コイン名>/coin.env から add-liquidity.sh 経由で渡される。
 contract AddLiquidity is Script {
     uint24 public constant FEE = 10_000;
@@ -85,15 +87,27 @@ contract AddLiquidity is Script {
 
     function run() external {
         address token = vm.envAddress("TOKEN_ADDRESS");
-        uint256 ethAmount = vm.envUint("LIQUIDITY_ETH_WEI");
         address recipient = vm.envOr("LP_RECIPIENT", address(0));
+        bool single = keccak256(bytes(vm.envOr("LIQUIDITY_MODE", string("full")))) == keccak256("single");
 
         vm.startBroadcast();
         if (recipient == address(0)) recipient = msg.sender;
         uint256 tokenAmount = IERC20(token).balanceOf(msg.sender);
-        Result memory r = addLiquidity(token, tokenAmount, ethAmount, recipient);
+        Result memory r = single
+            ? addSingleSided(
+                SingleSided({
+                    token: token,
+                    tokenAmount: tokenAmount,
+                    tickLower: int24(vm.envInt("TICK_LOWER")),
+                    tickUpper: int24(vm.envInt("TICK_UPPER")),
+                    initSqrtPriceX96: uint160(vm.envUint("INIT_SQRT_PRICE_X96")),
+                    recipient: recipient
+                })
+            )
+            : addLiquidity(token, tokenAmount, vm.envUint("LIQUIDITY_ETH_WEI"), recipient);
         vm.stopBroadcast();
 
+        console2.log("Mode           :", single ? "single-sided (token only)" : "full range (token + ETH)");
         console2.log("Pool           :", r.pool);
         console2.log("LP NFT tokenId :", r.tokenId);
         console2.log("LP recipient   :", recipient);
@@ -101,7 +115,71 @@ contract AddLiquidity is Script {
         console2.log("ETH used (wei) :", r.ethUsed);
     }
 
-    /// @notice 呼び出し元（broadcast 中はデプロイしたウォレット）が持つトークンと ETH でプールを作る
+    struct SingleSided {
+        address token;
+        uint256 tokenAmount;
+        int24 tickLower;
+        int24 tickUpper;
+        uint160 initSqrtPriceX96;
+        address recipient;
+    }
+
+    /// @notice 片側流動性：トークンだけで、開始価格より上（トークンが高くなる側）の全範囲にプールを作る
+    function addSingleSided(SingleSided memory p) public returns (Result memory r) {
+        require(p.tokenAmount > 0, "amount must be > 0");
+        require(
+            p.tickLower < p.tickUpper && p.tickLower % 200 == 0 && p.tickUpper % 200 == 0, "bad tick range"
+        );
+        Uniswap memory u = uniswapFor(block.chainid);
+        bool tokenIs0 = p.token < WETH;
+        (address token0, address token1) = tokenIs0 ? (p.token, WETH) : (WETH, p.token);
+
+        _checkNotFrontRun(u, token0, token1, p.initSqrtPriceX96);
+        r.pool = u.positionManager.createAndInitializePoolIfNecessary(token0, token1, FEE, p.initSqrtPriceX96);
+
+        // 範囲が現在価格の片側にあることを確かめる（トークンだけで入るはず）
+        (, int24 tick,,,,,) = IUniswapV3Pool(r.pool).slot0();
+        require(tokenIs0 ? tick < p.tickLower : tick >= p.tickUpper, "range must be on the token side of the price");
+
+        IERC20(p.token).approve(address(u.positionManager), p.tokenAmount);
+        uint256 used0;
+        uint256 used1;
+        (r.tokenId, r.liquidity, used0, used1) = u.positionManager.mint(_singleSidedMint(p, token0, token1, tokenIs0));
+        (r.tokenUsed, r.ethUsed) = tokenIs0 ? (used0, used1) : (used1, used0);
+    }
+
+    function _singleSidedMint(SingleSided memory p, address token0, address token1, bool tokenIs0)
+        internal
+        view
+        returns (INonfungiblePositionManager.MintParams memory m)
+    {
+        m.token0 = token0;
+        m.token1 = token1;
+        m.fee = FEE;
+        m.tickLower = p.tickLower;
+        m.tickUpper = p.tickUpper;
+        if (tokenIs0) {
+            m.amount0Desired = p.tokenAmount;
+            m.amount0Min = p.tokenAmount * 99 / 100;
+        } else {
+            m.amount1Desired = p.tokenAmount;
+            m.amount1Min = p.tokenAmount * 99 / 100;
+        }
+        m.recipient = p.recipient;
+        m.deadline = block.timestamp + 600;
+    }
+
+    /// @notice 先回り対策：既に誰かがプールを作っていたら、価格が想定の ±1% 以内でなければ中止
+    function _checkNotFrontRun(Uniswap memory u, address token0, address token1, uint160 sqrtPriceX96) internal view {
+        address existing = u.factory.getPool(token0, token1, FEE);
+        if (existing == address(0)) return;
+        (uint160 current,,,,,,) = IUniswapV3Pool(existing).slot0();
+        if (current == 0) return;
+        uint256 diff = current > sqrtPriceX96 ? current - sqrtPriceX96 : sqrtPriceX96 - current;
+        require(diff * 200 <= sqrtPriceX96, "pool already initialized at a different price");
+    }
+
+    /// @notice 両側・フルレンジ：呼び出し元（broadcast 中はデプロイしたウォレット）が持つトークンと ETH でプールを作る
     function addLiquidity(address token, uint256 tokenAmount, uint256 ethAmount, address recipient)
         public
         returns (Result memory r)
@@ -115,15 +193,7 @@ contract AddLiquidity is Script {
         // price = amount1 / amount0、sqrtPriceX96 = sqrt(price) * 2^96
         uint160 sqrtPriceX96 = uint160(Math.sqrt(Math.mulDiv(amount1, 1 << 192, amount0)));
 
-        // 先回り対策：既に誰かがプールを作っていたら、価格が想定の ±1% 以内でなければ中止
-        address existing = u.factory.getPool(token0, token1, FEE);
-        if (existing != address(0)) {
-            (uint160 current,,,,,,) = IUniswapV3Pool(existing).slot0();
-            if (current != 0) {
-                uint256 diff = current > sqrtPriceX96 ? current - sqrtPriceX96 : sqrtPriceX96 - current;
-                require(diff * 200 <= sqrtPriceX96, "pool already initialized at a different price");
-            }
-        }
+        _checkNotFrontRun(u, token0, token1, sqrtPriceX96);
 
         r.pool = u.positionManager.createAndInitializePoolIfNecessary(token0, token1, FEE, sqrtPriceX96);
 
