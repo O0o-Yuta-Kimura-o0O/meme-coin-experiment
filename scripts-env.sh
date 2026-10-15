@@ -28,4 +28,7 @@ confirm_mainnet() {
 # ローカルの試験チェーン（anvil）で通しのリハーサルをするときだけ、FORGE_SIGNER_ARGS で差し替える。
 signer_args="${FORGE_SIGNER_ARGS:---account ${DEPLOYER_ACCOUNT:-deployer}}"
 verify_args="--verify"
-[ -n "${NO_VERIFY:-}" ] && verify_args=""
+# 注意：「[ 条件 ] && 代入」の形にすると、条件が偽のときに set -e でスクリプト全体が黙って止まる
+if [ -n "${NO_VERIFY:-}" ]; then
+  verify_args=""
+fi
