@@ -10,7 +10,7 @@
   root.classList.add("motion");
 
   const targets = document.querySelectorAll(
-    ".section .label, .prose p, blockquote, .defs > div, .statement, .formula, .halving, .steps li, #experiment p, .remark p, .fin",
+    ".section .label, .prose p, blockquote, .defs > div, .portrait, .statement, .formula, .halving, .steps li, #experiment p, .remark p, .fin",
   );
   targets.forEach((el) => el.classList.add("reveal"));
   document.querySelectorAll(".defs > div, .steps li").forEach((el, i) => {

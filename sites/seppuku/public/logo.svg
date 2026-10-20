@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <!-- 証明終了の記号 ∎ を、一閃で斜めに断つ -->
-  <rect width="200" height="200" rx="44" fill="#f7f3f8"/>
+  <rect width="200" height="200" rx="44" fill="#fbf8f3"/>
   <clipPath id="a"><polygon points="0,0 200,0 200,86 0,122"/></clipPath>
   <clipPath id="b"><polygon points="0,134 200,98 200,200 0,200"/></clipPath>
-  <g clip-path="url(#a)"><rect x="52" y="52" width="96" height="96" fill="#3b3443"/></g>
-  <g clip-path="url(#b)" transform="translate(5 3)"><rect x="52" y="52" width="96" height="96" fill="#3b3443"/></g>
-  <line x1="28" y1="132" x2="176" y2="105" stroke="#e7a9c4" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M150 40 q10 -2 14 8 q-10 6 -14 -8 z" fill="#e7a9c4"/>
+  <g clip-path="url(#a)"><rect x="52" y="52" width="96" height="96" fill="#26211d"/></g>
+  <g clip-path="url(#b)" transform="translate(5 3)"><rect x="52" y="52" width="96" height="96" fill="#26211d"/></g>
+  <line x1="28" y1="132" x2="176" y2="105" stroke="#e7a3b0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M150 40 q10 -2 14 8 q-10 6 -14 -8 z" fill="#e7a3b0"/>
 </svg>

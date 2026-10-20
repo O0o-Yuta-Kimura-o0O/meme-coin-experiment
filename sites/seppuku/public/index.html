@@ -11,7 +11,7 @@
   <!-- 独自ドメインが決まったら絶対 URL にする（例: https://seppuku.xyz/og.jpg） -->
   <meta property="og:image" content="og.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#f7f3f8">
+  <meta name="theme-color" content="#fbf8f3">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preload" as="image" href="hero.webp">
   <link rel="stylesheet" href="style.css">
@@ -41,7 +41,7 @@
   <main id="top">
     <section class="hero">
       <figure class="hero-figure">
-        <img src="hero.webp" alt="A samurai in white kneels on a tatami before a folding screen of plum blossoms, attended by retainers, as petals fall." width="1672" height="941">
+        <img src="hero.webp" alt="A samurai in white kneels on a tatami before a folding screen of plum blossoms, attended by retainers, as petals fall." fetchpriority="high" width="1672" height="941">
       </figure>
       <div class="hero-text">
         <p class="eyebrow"><span class="coin-name">SEPPUKU COIN ($SEPPUKU)</span><span data-i18n="eyebrow">a conceptual meme coin (cryptocurrency) on Base</span></p>
@@ -80,10 +80,15 @@
       <p class="label">§2 &nbsp; Definitions <span class="ja-sub" lang="ja">定義</span></p>
       <dl class="defs">
         <div><dt>Definition 1 <span>(Supply)</span></dt><dd data-i18n="def1"><b>1,000,000,000</b> tokens, minted once. No further mint exists.</dd></div>
-        <div><dt>Definition 2 <span>(Distribution)</span></dt><dd data-i18n="def2"><b>90%</b> liquidity, permanently locked · <b>5%</b> team, locked by halving · <b>5%</b> community</dd></div>
+        <div><dt>Definition 2 <span>(Distribution)</span></dt><dd data-i18n="def2"><b>90%</b> liquidity — placed in the trading pool and <b>locked forever</b>. No one, not even the team, can take the coins or funds out of the pool directly; they move only when people buy and sell on exchanges (DEX / CEX).<br><b>5%</b> team — <b>unlocked little by little, by halving</b>: half after 90 days, then half of the remainder every 180 days.<br><b>5%</b> community</dd></div>
         <div><dt>Definition 3 <span>(Neutrality)</span></dt><dd data-i18n="def3"><b>No token tax</b>: the coin adds nothing on top of trades (the DEX's 1% pool fee and network gas still apply). No owner, no pause, no blacklist. The contract cannot be changed — by anyone, including its author.</dd></div>
       </dl>
     </section>
+
+    <figure class="portrait">
+      <img src="son.webp" alt="A boy in formal hakama and round glasses stands with hands on hips before a folding screen of plum blossoms." width="1024" height="1536" loading="lazy">
+      <figcaption lang="ja"><span>父　桝 柿左衛門</span><span>子　桝 柿太郎</span></figcaption>
+    </figure>
 
     <section id="lemma" class="section">
       <p class="label">§3 &nbsp; Lemma <span class="ja-sub" lang="ja">半減期</span></p>
