@@ -175,8 +175,10 @@ blockquote .ja { margin-top: 14px; font-style: normal; font-size: 16px; letter-s
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .lang select {
   appearance: none; -webkit-appearance: none;
-  font: 13px/1 var(--serif); letter-spacing: 0.06em; color: var(--ink);
-  padding: 7px 28px 7px 12px; border: 1px solid var(--line); border-radius: 999px;
+  /* 行の高さを 1 にすると、iOS の Safari で日本語・中国語などの上端が欠けるので、余裕を持たせる */
+  font: 13px/1.6 var(--serif); letter-spacing: 0.06em; color: var(--ink);
+  height: auto; min-height: 34px;
+  padding: 5px 30px 5px 13px; border: 1px solid var(--line); border-radius: 999px;
   background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23776b60' stroke-width='1.2'/%3E%3C/svg%3E") no-repeat right 11px center;
   cursor: pointer;
 }
