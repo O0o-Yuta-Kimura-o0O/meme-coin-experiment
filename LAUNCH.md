@@ -74,13 +74,13 @@ SEPPUKU COIN は **片側流動性**（`LIQUIDITY_MODE=single`）を使います
 手数料の回収は、永久ロックのコントラクトで `collect(<LP の NFT 番号>)` を呼ぶ（誰が呼んでも受取人に届く）。受取人のアドレスを変える手順は [TEAM.md](TEAM.md) の「手数料の受取人のアドレスを変える手順」を参照。
 
 ```bash
-cast send <Permanent lock のアドレス> "collect(uint256)" <LP の NFT 番号> --account deployer --rpc-url base_sepolia
+cast send <Permanent lock のアドレス> "collect(uint256)" <LP の NFT 番号> --account deployer --rpc-url https://sepolia.base.org
 ```
 
 `release()` は、Basescan の「Write Contract」から呼べます。コマンドなら次のとおりです。
 
 ```bash
-cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-url base_sepolia
+cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-url https://sepolia.base.org
 ```
 
 ## 5. 本番の前に

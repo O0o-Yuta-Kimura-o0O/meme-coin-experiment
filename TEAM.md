@@ -291,13 +291,13 @@ SEPPUKU COIN と、このリポジトリのアート・研究は、**Team SEPPUK
 **方法 B：木村さんの Mac のターミナルから（受取人の鍵がハードウェアウォレットの場合など）**
 
 ```bash
-cast send <永久ロックのアドレス> "setBeneficiary(uint256,address)" <LP の番号> <新しいアドレス> --ledger --rpc-url base
+cast send <永久ロックのアドレス> "setBeneficiary(uint256,address)" <LP の番号> <新しいアドレス> --ledger --rpc-url https://mainnet.base.org
 ```
 
 `--ledger` は Ledger を使う場合。確認は次のコマンドで行う。
 
 ```bash
-cast call <永久ロックのアドレス> "beneficiaryOf(uint256)(address)" <LP の番号> --rpc-url base
+cast call <永久ロックのアドレス> "beneficiaryOf(uint256)(address)" <LP の番号> --rpc-url https://mainnet.base.org
 ```
 
 **変更したあと**
