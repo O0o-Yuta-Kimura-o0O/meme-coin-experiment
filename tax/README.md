@@ -69,4 +69,19 @@ python3 tax/ledger.py private/tax/config.testnet.json
 
 ## 本番用の設定
 
+デプロイと流動性の追加が終わったら、送信記録からコインの情報を自動で書き足します（設定ファイルを手で書く必要はない）。
+
+```bash
+cp private/tax/mainnet.pending.json private/tax/config.mainnet.json
+```
+
+```bash
+python3 tax/add_coin.py 8453 private/tax/config.mainnet.json SEPPUKU
+```
+
+- トークン、プール、LP ポジションの番号と手数料の受取人、半減期ロックと受取人を読み取り、`owners` のウォレットと突き合わせてメンバーに割り当てる
+- 2 つ目以降のコインも同じコマンドで足せる。記録が既にそのコインのデプロイより先まで進んでいても、次の実行で、そのコインの分だけさかのぼって読む（`from_block`）。同じ記録が二重に書かれることはない
+
+以下は、手で書く場合の参考です。
+
 本番（Base）では、`config.example.json` をもとに `private/tax/config.mainnet.json` を作り、`network` を `base`、`rpc` を `https://mainnet.base.org`、`position_manager` を `0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1` にします。コインのアドレス、LP ポジションの番号、半減期ロックのアドレスは、デプロイ後に `coins/<コイン名>/deployments.md` から写します。

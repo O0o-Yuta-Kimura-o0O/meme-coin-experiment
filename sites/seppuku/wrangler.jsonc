@@ -12,10 +12,8 @@
   },
   "rules": [{ "type": "Text", "globs": ["**/*.client.js"], "fallthrough": false }],
   "vars": {
-    "SITE": "seppuku",
-    // 開発中は日本語に固定する。テスト・公開の前に、この行を消す
-    // （残したままだと npm run deploy:seppuku が止まるようにしてある）
-    "FORCE_LANG": "ja"
+    "SITE": "seppuku"
+    // 言語を固定して確認したいときは "FORCE_LANG": "ja" を足す（残したままだと npm run deploy:seppuku が止まる）
   },
   // 全コインのサイトで1つのデータベースを共有する（site 列で区別）
   "d1_databases": [

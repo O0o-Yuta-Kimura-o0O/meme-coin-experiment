@@ -3,7 +3,7 @@
 
 - 何を記録するか：tax/README.md の「記録する出来事」を参照
 - 前回どこまで読んだか（ブロック番号）、LP ポジションの持ち分、プールの価格、ETH の円相場を state.json に保存し、
-  毎回その続きから読む（公式 RPC は 1 回の問い合わせが 200 ブロックまでのため）
+  毎回その続きから読む。接続先は publicnode（1 回の問い合わせが 50,000 ブロックまで。設定の max_block_range）
 - 円換算：ETH は CoinGecko の 1 時間ごとの円相場、コインはプールの価格 × ETH の円相場
 - 標準ライブラリのみで動く。個人情報（誰のウォレットか）は設定ファイルにだけ書き、GitHub には上げない
 
@@ -100,15 +100,19 @@ class Prices:
         need = [h for h in range(ts_from // 3600 * 3600, ts_to // 3600 * 3600 + 3600, 3600) if str(h) not in self.cache]
         if not need:
             return
+        # 範囲が短いと（直近の数時間だけなど）値が返らないことがあるため、前に 2 日広げて問い合わせる
         url = (
             "https://api.coingecko.com/api/v3/coins/ethereum/market_chart/range"
-            f"?vs_currency=jpy&from={need[0] - 3600}&to={need[-1] + 3600}"
+            f"?vs_currency=jpy&from={need[0] - 2 * 86400}&to={need[-1] + 3600}"
         )
         for attempt in range(5):
             try:
                 with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "seppuku-ledger"}), timeout=60) as res:
                     points = json.load(res)["prices"]
-                break
+                if points:
+                    break
+                log("  coingecko returned no prices; retrying")
+                time.sleep(15 * (attempt + 1))
             except Exception as e:
                 log(f"  coingecko retry ({e})")
                 time.sleep(15 * (attempt + 1))
@@ -150,16 +154,19 @@ class Ledger:
             c["vestings"] = {k.lower(): v for k, v in c["vestings"].items()}
             self.coins.append(c)
         self.npm = self.cfg["position_manager"].lower()
+        self.ts_cache = {}
+        self.state.pop("ts_ref", None)  # 以前の推計用の基準点（使わなくなった）
 
-    # ---- ブロックと時刻（Base は 2 秒ごとに 1 ブロック）
+    # ---- ブロックと時刻
+    # ブロックの間隔は一定ではない（Base Sepolia は 2026 年 10 月に 2 秒から約 0.2 秒になった）ため、
+    # 推計せず、ブロックごとの実際の時刻を使う
     def block_ts(self, block):
-        ref = self.state.get("ts_ref")
-        if not ref:
+        if block not in self.ts_cache:
             b = self.rpc.call("eth_getBlockByNumber", [hex(block), False])
-            ref = self.state["ts_ref"] = [block, int(b["timestamp"], 16)]
-        return ref[1] + (block - ref[0]) * 2
+            self.ts_cache[block] = int(b["timestamp"], 16)
+        return self.ts_cache[block]
 
-    # ---- ログの取得（範囲は 200 ブロックずつ。超えたら縮める）
+    # ---- ログの取得（範囲は max_block_range ずつ。断られたら縮める）
     def logs(self, frm, to, flt):
         out, start, span = [], frm, self.cfg.get("max_block_range", 200)
         while start <= to:
@@ -248,12 +255,16 @@ class Ledger:
         coin_by_token = {c["token"]: c for c in self.coins}
 
         if logs:
+            for lg in logs:  # RPC が時刻を返すときは、それを使う（問い合わせを減らすため）
+                if lg.get("blockTimestamp"):
+                    self.ts_cache[int(lg["blockNumber"], 16)] = int(lg["blockTimestamp"], 16)
             ts = [self.block_ts(int(lg["blockNumber"], 16)) for lg in logs]
             self.prices.ensure(min(ts), max(ts))
 
         for tx, tx_logs in by_tx.items():
             swap_txs = {lg["address"].lower() for lg in tx_logs if lg["topics"][0] == T_SWAP}
             inc_in_tx = any(lg["topics"][0] == T_INC for lg in tx_logs)
+            collect_in_tx = any(lg["topics"][0] == T_COLLECT and lg["address"].lower() == self.npm for lg in tx_logs)
             owner_traded = set()
 
             for lg in tx_logs:
@@ -330,6 +341,9 @@ class Ledger:
                     # 自分のプールでの売買は "trade" で記録済み
                     if (frm in pools or to in pools) and (fo or to_owner) and (frm in swap_txs or to in swap_txs):
                         continue
+                    # LP ポジションからの回収で、プールからウォレットへ届いた分は "lp_withdraw" で記録済み
+                    if frm in pools and to_owner and collect_in_tx:
+                        continue
                     vest_owner = next((c["vestings"][a] for c in self.coins for a in (frm, to) if a in c["vestings"]), None)
                     if frm == ZERO_ADDR:
                         self.row(rows, lg, to_owner, coin, "issuance", asset, amount, "発行（取得価額は 0）")
@@ -372,17 +386,33 @@ class Ledger:
         self.row(rows, lg, owner, None, "gas_fee", "ETH", -fee, f"送信元 {r['from']}（経費）")
 
     # ---- 実行
-    def run(self):
-        latest = int(self.rpc.call("eth_blockNumber", []), 16) - self.cfg.get("confirmations", 10)
-        frm = self.state.get("next_block", self.cfg["start_block"])
-        if frm > latest:
-            log("up to date")
-            return
-        log(f"[{self.network}] blocks {frm} .. {latest}")
-        rows = self.process(self.fetch(frm, latest))
+    def backfill(self):
+        """読み終えたブロックより後から設定に足したコイン（from_block 付き）を、そのコインだけ過去にさかのぼって読む。"""
+        done = set(self.state.setdefault("backfilled", []))
+        nxt = self.state.get("next_block")
+        rows = []
+        for coin in [c for c in self.coins if c.get("from_block") is not None and c["token"] not in done]:
+            if nxt is not None and coin["from_block"] < nxt:
+                log(f"[{self.network}] backfill {coin['symbol']}: blocks {coin['from_block']} .. {nxt - 1}")
+                everything, self.coins = self.coins, [coin]
+                try:
+                    rows += [r for r in self.process(self.fetch(coin["from_block"], nxt - 1))
+                             if r["coin"] in (coin["symbol"], "")]
+                finally:
+                    self.coins = everything
+            self.state["backfilled"].append(coin["token"])
+        return rows
+
+    def write_rows(self, rows):
         for owner in self.cfg["owners"]:
-            mine = [r for r in rows if r["owner"] == owner]
             path = self.dir / f"{owner}.csv"
+            seen = set()
+            if path.exists():
+                with path.open(newline="", encoding="utf-8") as f:
+                    seen = {(r["tx_hash"], r["category"], r["asset"], r["amount"]) for r in csv.DictReader(f)}
+            # 同じ取引の同じ記録を二重に書かない（過去にさかのぼって読んだときのため）
+            mine = [r for r in rows if r["owner"] == owner
+                    and (r["tx_hash"], r["category"], r["asset"], r["amount"]) not in seen]
             new = not path.exists()
             with path.open("a", newline="", encoding="utf-8") as f:
                 w = csv.DictWriter(f, fieldnames=COLUMNS)
@@ -390,7 +420,18 @@ class Ledger:
                     w.writeheader()
                 w.writerows(mine)
             log(f"  {owner}: +{len(mine)} rows -> {path}")
-        self.state["next_block"] = latest + 1
+
+    def run(self):
+        latest = int(self.rpc.call("eth_blockNumber", []), 16) - self.cfg.get("confirmations", 10)
+        rows = self.backfill()
+        frm = self.state.get("next_block", self.cfg["start_block"])
+        if frm <= latest:
+            log(f"[{self.network}] blocks {frm} .. {latest}")
+            rows += self.process(self.fetch(frm, latest))
+            self.state["next_block"] = latest + 1
+        else:
+            log("up to date")
+        self.write_rows(rows)
         self.state_path.write_text(json.dumps(self.state, indent=1, ensure_ascii=False))
 
 

@@ -18,7 +18,7 @@ seppuku/public/             SEPPUKU のページ（index.html、privacy.html、4
 
 1. URL の `?lang=xx`（テスト用。例: `?lang=fr`）
 2. 閲覧者がプルダウンで選んだ言語
-3. 開発中の固定言語：`wrangler.jsonc` の `FORCE_LANG`（**今は `"ja"`。テスト・公開の前に消す**）
+3. 開発中の固定言語：`wrangler.jsonc` の `FORCE_LANG`（2026-10-31 に外した。確かめたいときだけ一時的に足す）
 4. 閲覧者の国（Cloudflare が判定。テスト用に `?country=BR` などで上書きできる）。対応表にない国は英語
 5. 英語
 
@@ -91,9 +91,13 @@ cd sites && openssl rand -hex 32 | npx wrangler secret put PUBLISH_HASH_KEY --co
 cd sites && T=$(openssl rand -hex 32) && printf %s "$T" | npx wrangler secret put EXPORT_TOKEN --config seppuku/wrangler.jsonc && printf %s "$T" | gh secret set SITE_EXPORT_TOKEN && unset T
 ```
 
-6. `seppuku/wrangler.jsonc` の `"FORCE_LANG": "ja"` の行を消す（開発中の日本語固定を外す）
+6. 本番の表示に切り替える（トークンのアドレス、Uniswap の購入リンク、テストネット表示の削除、SNS のリンク、og:image）
 
-7. 公開する（公開前のチェックが自動で走り、設定が残っていれば止まる）
+```bash
+cd sites && node scripts/set-launch.mjs seppuku <トークンのアドレス> https://seppuku-site.meme-coin-sites.workers.dev
+```
+
+7. 公開する（公開前のチェックが自動で走り、日本語固定・テストネットの表示・「準備中」のボタン・リンク先のない SNS が残っていれば止まる）
 
 ```bash
 cd sites && npm run deploy:seppuku

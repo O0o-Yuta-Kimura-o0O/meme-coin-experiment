@@ -16,6 +16,21 @@ if (config.includes('"database_id": "00000000-0000-0000-0000-000000000000"')) {
   problems.push("wrangler.jsonc の database_id が仮の値のままです。`npx wrangler d1 create meme-analytics` の出力で置き換えてください。");
 }
 
+// 本番だけ：テストネットの表示や、まだ押せないボタンが残っていないか
+// （scripts/set-launch.mjs を実行すれば直る）
+if (!isPreview) {
+  const html = readFileSync(new URL(`../${site}/public/index.html`, import.meta.url), "utf8");
+  if (/class="net-badge"/.test(html) || /sepolia/i.test(html)) {
+    problems.push("index.html にテストネット（Base Sepolia）の表示が残っています。`node scripts/set-launch.mjs` で本番のアドレスに切り替えてください。");
+  }
+  if (/data-track="cta_buy"[^>]*aria-disabled="true"|aria-disabled="true"[^>]*data-track="cta_buy"/.test(html)) {
+    problems.push("index.html の「入手する」ボタンが「準備中」のままです。`node scripts/set-launch.mjs` で切り替えてください。");
+  }
+  if (/<a href="#"[^>]*data-track="social_/.test(html)) {
+    problems.push("index.html に、リンク先のない SNS のリンク（href=\"#\"）が残っています。");
+  }
+}
+
 if (problems.length) {
   console.error(`[${site}] 公開を中止しました:\n- ` + problems.join("\n- "));
   process.exit(1);

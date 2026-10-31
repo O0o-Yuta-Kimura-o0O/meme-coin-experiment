@@ -85,24 +85,62 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 
 ## 5. 本番の前に
 
-- [ ] テストネットで 2〜4 をすべて確認した
-- [ ] 弁護士に相談した（暗号資産交換業に当たらないか）
-- [ ] `TEAM_WALLETS` の二人のアドレスが正しい（後から変更できない）。本番はハードウェアウォレットを推奨
-- [ ] `LIQUIDITY_MODE` と `START_FDV_ETH` は全コインで同じ値になっている
-- [ ] サイトの日本語固定（`sites/seppuku/wrangler.jsonc` の `FORCE_LANG`）を外した
-- [ ] `LP_RECIPIENTS` の二人のアドレスが正しい（本番はハードウェアウォレットを推奨）
-- [ ] `LP_LOCK=permanent` になっている（永久ロック。取り消せない）
+- [x] テストネットで 2〜4 をすべて確認した（3 回目は本番と同じ構成。`coins/seppuku/deployments.md`）
+- [x] ローカルの Base 本番の複製（anvil のフォーク）で、本番の設定のまま、デプロイ → 片側流動性と永久ロック → 購入 → 手数料の発生 まで通した（2026-10-31。ガス代 計 約 0.00005 ETH）
+- [x] Base 本番の Uniswap のアドレス（Factory・PositionManager・WETH・SwapRouter02）がつながっていることを、チェーン上で確認した
+- [x] デプロイ用ウォレット（旧Address2）に、Base の ETH がある（0.004 ETH。1 コイン 約 0.0001 ETH）
+- [x] サイトの日本語固定（`FORCE_LANG`）を外した
+- [ ] 弁護士・税理士に相談した（`private/legal/` の相談文）
+- [ ] 共同制作の覚書に署名した
+- [ ] `TEAM_WALLETS`・`LP_RECIPIENTS`・`COMMUNITY_WALLET` が本番の二人とコミュニティ用のアドレスになっている（後から変更できない。2026-10-31 時点で設定済み）
+- [ ] `LIQUIDITY_MODE=single`・`START_FDV_ETH=10`・`LP_LOCK=permanent` になっている
 
-## 6. 本番
+## 6. 本番（ローンチの当日）
 
-テストネットと同じコマンドで、ネットワークを `base` にします。実行前に確認を求められます。
+上から順に行います。コマンドは、リポジトリの直下（`~/Documents/Meme_Coin`）で実行します。どれも、途中でデプロイ鍵パスワードを聞かれます。
+
+**1. デプロイ**（実行前に確認を求められるので `y`）
 
 ```bash
 ./deploy.sh seppuku base
 ```
 
+**2. 流動性の追加と永久ロック**（表示された `Token` のアドレスを入れる）
+
 ```bash
 ./add-liquidity.sh seppuku base <Token のアドレス>
 ```
 
-その後、LP（NFT）をロッカーでロックし、トークンのアドレスを `coins/seppuku/tracking.json` の `token_address` に書くと、データの自動収集が始まります。
+ソースコードの検証で `Too many requests` が出ても、送信が成功していれば問題ありません（あとで検証し直せる）。
+
+**3. 記録する**：表示された Token、HalvingVesting（二人分）、Pool、永久ロック、実際の LP NFT の番号を `coins/seppuku/deployments.md` に書く
+
+**4. 税務記録に足す**（設定ファイルを作り、コインの情報を送信記録から自動で書き足す）
+
+```bash
+cp private/tax/mainnet.pending.json private/tax/config.mainnet.json
+```
+
+```bash
+python3 tax/add_coin.py 8453 private/tax/config.mainnet.json SEPPUKU
+```
+
+そのあと、非公開リポジトリ（`private/tax`）で commit して push する。GitHub Actions は `config.*.json` をすべて読むので、次の 6 時間ごとの実行から本番の記録が始まる。
+
+**5. サイトを本番の表示に切り替える**（アドレス、Uniswap の購入リンク、テストネット表示の削除、SNS のリンク、og:image）。SNS のアカウントは、`coins/seppuku/tracking.json` に書いてから実行する（あとから書いて、もう一度実行してもよい）
+
+```bash
+cd sites && node scripts/set-launch.mjs seppuku <Token のアドレス> https://seppuku-site.meme-coin-sites.workers.dev
+```
+
+**6. サイトを公開する**（最初の 1 回だけ、`sites/README.md` の「本番に公開する」の 4・5 で秘密の鍵を登録する）
+
+```bash
+cd sites && npm run deploy:seppuku
+```
+
+公開前のチェック（`check-release.mjs`）が、テストネットの表示、「準備中」のボタン、リンク先のない SNS が残っていないかを確かめ、残っていれば止まります。
+
+**7. 動作を確かめる**：サイトのコピーボタンと購入リンク、Basescan でのトークンの表示、少額の購入（任意）
+
+**8. 保存する**：`git add -A && git commit` して push（`tracking.json` にアドレスが入ると、データの自動収集が始まる）
