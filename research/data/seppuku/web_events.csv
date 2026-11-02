@@ -1,0 +1,6 @@
+id,received_at,event_at,elapsed_ms,session_id,visitor,country,device,os,browser,app,type,path,referrer,data
+1325,2026-11-02T10:03:04.507Z,2026-11-02T10:02:49.506Z,5,c5ae7cf4-d8db-4dbd-923f-7e813e6ea9b9,,JP,desktop,macos,safari,,view,/,,"{""lang"":""ja"",""page_lang"":""ja"",""w"":1432}"
+1326,2026-11-02T10:03:04.507Z,2026-11-02T10:02:52.241Z,2739,c5ae7cf4-d8db-4dbd-923f-7e813e6ea9b9,,JP,desktop,macos,safari,,scroll,/,,"{""pct"":25}"
+1327,2026-11-02T10:03:04.507Z,2026-11-02T10:02:57.678Z,8176,c5ae7cf4-d8db-4dbd-923f-7e813e6ea9b9,,JP,desktop,macos,safari,,scroll,/,,"{""pct"":50}"
+1328,2026-11-02T10:03:04.507Z,2026-11-02T10:02:59.240Z,9739,c5ae7cf4-d8db-4dbd-923f-7e813e6ea9b9,,JP,desktop,macos,safari,,scroll,/,,"{""pct"":75}"
+1329,2026-11-02T10:11:13.145Z,2026-11-02T10:10:57.273Z,1,3959ee03-28e0-45ec-a99e-9b3280c750c2,090205a2a4c3d66c,JP,desktop,macos,chrome,,view,/,,"{""lang"":""ja"",""page_lang"":""ja"",""w"":0}"
