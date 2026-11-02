@@ -1,6 +1,6 @@
 {
-  "token_address": "",
-  "site_url": "",
+  "token_address": "0xa92B274F7ff72214702F2E39E40d497d91Ca8b43",
+  "site_url": "https://seppuku-site.meme-coin-sites.workers.dev",
   "x": {
     "username": "",
     "query": "\"SEPPUKU\" (coin OR token) -is:retweet"

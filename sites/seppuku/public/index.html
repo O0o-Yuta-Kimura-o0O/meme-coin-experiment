@@ -8,8 +8,8 @@
   <meta property="og:title" content="SEPPUKU COIN — The proof was beautiful. It just wasn't ours.">
   <meta property="og:description" content="A conceptual meme coin about mathematicians outproved by AI. What is cut is pride. What survives is mathematics.">
   <meta property="og:type" content="website">
-  <!-- 独自ドメインが決まったら絶対 URL にする（例: https://seppuku.xyz/og.jpg） -->
-  <meta property="og:image" content="og.jpg">
+  <meta property="og:url" content="https://seppuku-site.meme-coin-sites.workers.dev/">
+  <meta property="og:image" content="https://seppuku-site.meme-coin-sites.workers.dev/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#fbf8f3">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -48,16 +48,14 @@
         <h1>The proof was beautiful.<br><em>It just wasn't ours.</em></h1>
         <p class="ja" lang="ja">証明は美しかった。<wbr>ただ、それは私たちの<wbr>ものではなかった。</p>
         <div class="cta">
-          <!-- ローンチ後: href を Uniswap のスワップ URL に差し替え、aria-disabled を外し、data-i18n を "cta_buy_live" に -->
-          <a class="btn primary" href="#buy" data-track="cta_buy" data-i18n="cta_buy" aria-disabled="true">Acquire — coming soon</a>
+          <!-- Uniswap のスワップ画面（scripts/set-launch.mjs で設定） -->
+          <a class="btn primary" href="https://app.uniswap.org/swap?chain=base&amp;inputCurrency=NATIVE&amp;outputCurrency=0xa92B274F7ff72214702F2E39E40d497d91Ca8b43" target="_blank" rel="noopener" data-track="cta_buy" data-i18n="cta_buy_live">Acquire on Uniswap</a>
           <a class="btn" href="#story" data-track="cta_story" data-i18n="cta_story">Read the story</a>
         </div>
         <div class="ca">
           <span class="ca-label" data-i18n="ca_label">Contract</span>
-          <!-- テストネットのアドレスを載せている間だけ hidden を外す -->
-          <span class="net-badge">Testnet · Base Sepolia</span>
-          <!-- ローンチ後: data-address にトークンのアドレスを入れ、表示も差し替えて data-i18n を外す -->
-          <code id="ca" data-address="0xc0D073e0250202AB959c2875064Ca11C85Ae08eA"><a href="https://base-sepolia.blockscout.com/address/0xc0D073e0250202AB959c2875064Ca11C85Ae08eA" target="_blank" rel="noopener" data-track="ca_explorer">0xc0D0…08eA</a></code>
+          <!-- 本番のトークン（scripts/set-launch.mjs で設定） -->
+          <code id="ca" data-address="0xa92B274F7ff72214702F2E39E40d497d91Ca8b43"><a href="https://basescan.org/token/0xa92B274F7ff72214702F2E39E40d497d91Ca8b43" target="_blank" rel="noopener" data-track="ca_explorer">0xa92B…8b43</a></code>
           <button type="button" id="copy-ca" data-track="copy_address" data-i18n="copy">Copy</button>
         </div>
       </div>
@@ -130,10 +128,6 @@
   </main>
 
   <footer class="footer">
-    <!-- アカウント開設後: href を差し替え -->
-    <a href="#" data-track="social_x">X</a>
-    <a href="#" data-track="social_youtube">YouTube</a>
-    <a href="#" data-track="social_instagram">Instagram</a>
     <a href="privacy.html" data-i18n="privacy">Privacy</a>
     <span class="credit">© 2026 Team SEPPUKU</span>
   </footer>

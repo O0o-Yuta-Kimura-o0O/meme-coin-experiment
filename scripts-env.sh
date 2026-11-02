@@ -40,6 +40,7 @@ if [ -n "${NO_VERIFY:-}" ]; then
 elif [ -z "${ETHERSCAN_API_KEY:-}" ]; then
   case "$network" in
     base_sepolia) verify_args="--verify --verifier blockscout --verifier-url https://base-sepolia.blockscout.com/api/" ;;
-    base) verify_args="--verify --verifier blockscout --verifier-url https://base.blockscout.com/api/" ;;
+    # Blockscout 本番の API は人間確認の画面で止まるため、Sourcify に送る（Blockscout にも表示される。2026-11-02）
+    base) verify_args="--verify --verifier sourcify" ;;
   esac
 fi
