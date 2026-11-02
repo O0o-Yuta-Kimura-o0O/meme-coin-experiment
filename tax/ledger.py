@@ -216,13 +216,18 @@ class Ledger:
         return self.coin_price_eth(coin) * eth
 
     # ---- 記録の行
+    # 時価を付けない区分。永久ロックしたプールの中での交換（lp_swap）は、当方の所得にならない前提で扱う
+    #（2026-11-02 の方針。木村の責任で決定）。数量の増減だけを残す
+    UNVALUED = {"lp_swap"}
+
     def row(self, rows, lg, owner, coin, category, asset, amount_wei, note=""):
         if not owner or amount_wei == 0:
             return
         block = int(lg["blockNumber"], 16)
         ts = self.block_ts(block)
         amount = Decimal(amount_wei) / E18
-        price = self.unit_jpy(asset, coin, ts)
+        valued = category not in self.UNVALUED
+        price = self.unit_jpy(asset, coin, ts) if valued else None
         rows.append({
             "datetime_jst": datetime.fromtimestamp(ts, JST).strftime("%Y-%m-%d %H:%M:%S"),
             "unix_time": ts,
@@ -232,9 +237,9 @@ class Ledger:
             "category": category,
             "asset": asset,
             "amount": f"{amount:.18f}".rstrip("0").rstrip("."),
-            "unit_price_jpy": f"{price:.10f}".rstrip("0").rstrip("."),
-            "value_jpy": f"{amount * price:.2f}",
-            "eth_jpy": f"{self.prices.eth_jpy(ts):.2f}",
+            "unit_price_jpy": f"{price:.10f}".rstrip("0").rstrip(".") if valued else "",
+            "value_jpy": f"{amount * price:.2f}" if valued else "",
+            "eth_jpy": f"{self.prices.eth_jpy(ts):.2f}" if valued else "",
             "tx_hash": lg["transactionHash"],
             "block": block,
             "note": note,

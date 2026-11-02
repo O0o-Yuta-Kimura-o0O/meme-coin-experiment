@@ -90,10 +90,11 @@ cast send <HalvingVesting のアドレス> "release()" --account deployer --rpc-
 - [x] Base 本番の Uniswap のアドレス（Factory・PositionManager・WETH・SwapRouter02）がつながっていることを、チェーン上で確認した
 - [x] デプロイ用ウォレット（旧Address2）に、Base の ETH がある（0.004 ETH。1 コイン 約 0.0001 ETH）
 - [x] サイトの日本語固定（`FORCE_LANG`）を外した
-- [ ] 弁護士・税理士に相談した（`private/legal/` の相談文）
-- [ ] 共同制作の覚書に署名した
-- [ ] `TEAM_WALLETS`・`LP_RECIPIENTS`・`COMMUNITY_WALLET` が本番の二人とコミュニティ用のアドレスになっている（後から変更できない。2026-10-31 時点で設定済み）
-- [ ] `LIQUIDITY_MODE=single`・`START_FDV_ETH=10`・`LP_LOCK=permanent` になっている
+- [x] 弁護士に相談した（2026-11 、Web3 に詳しい弁護士にカジュアルな場で。違法性がないことの保証ではないが、この対応で問題ないとの判断。問題視されたときは協力を得られる）
+- [ ] 税理士に相談した（`private/legal/` の相談文。ローンチ後になる。法令と税務の責任は木村が負う方針で先に進める）
+- [x] 共同制作の覚書を二人で確認した（相続などで受取人が変わる場合の取り決めは、後から強化する）
+- [x] `TEAM_WALLETS`・`LP_RECIPIENTS`・`COMMUNITY_WALLET` が本番の二人とコミュニティ用のアドレスになっている（後から変更できない。2026-10-31 時点で設定済み）
+- [x] `LIQUIDITY_MODE=single`・`START_FDV_ETH=10`・`LP_LOCK=permanent` になっている
 
 ## 6. 本番（ローンチの当日）
 
