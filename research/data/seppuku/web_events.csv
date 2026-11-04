@@ -45,3 +45,11 @@ id,received_at,event_at,elapsed_ms,session_id,visitor,country,device,os,browser,
 1368,2026-11-02T18:09:30.323Z,2026-11-02T18:09:30.323Z,148355,571ca78b-0fd9-4af9-b98a-c7ccc287cbe8,bb206d396cd16d3b,NL,mobile,ios,safari,,leave,/,,"{""visible_ms"":146309}"
 1369,2026-11-02T21:36:51.844Z,2026-11-02T21:36:36.839Z,1,23cb2b12-a339-4eb2-b4f5-013a6cb3e779,c958142cb37c2755,JP,mobile,ios,other,x,view,/,t.co,"{""lang"":""ja"",""page_lang"":""ja"",""w"":375}"
 1370,2026-11-02T21:36:52.452Z,2026-11-02T21:36:52.452Z,15610,23cb2b12-a339-4eb2-b4f5-013a6cb3e779,c958142cb37c2755,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":15609}"
+1378,2026-11-04T06:50:41.818Z,2026-11-04T06:50:26.815Z,0,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,view,/,t.co,"{""lang"":""ja"",""page_lang"":""ja"",""w"":375}"
+1379,2026-11-04T06:50:41.818Z,2026-11-04T06:50:29.170Z,2355,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,scroll,/,,"{""pct"":25}"
+1380,2026-11-04T06:50:41.818Z,2026-11-04T06:50:32.126Z,5311,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,scroll,/,,"{""pct"":50}"
+1381,2026-11-04T06:50:50.630Z,2026-11-04T06:50:50.630Z,23818,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":23818}"
+1382,2026-11-04T06:51:11.820Z,2026-11-04T06:51:05.862Z,39046,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,visible,/,,
+1383,2026-11-04T06:53:34.113Z,2026-11-04T06:53:34.109Z,187153,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":171924}"
+1384,2026-11-04T06:55:30.907Z,2026-11-04T06:55:28.515Z,276368,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,visible,/,,
+1385,2026-11-04T06:55:30.907Z,2026-11-04T06:55:30.907Z,278761,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":174316}"
