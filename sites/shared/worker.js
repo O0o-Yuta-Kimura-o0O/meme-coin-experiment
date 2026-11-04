@@ -7,7 +7,7 @@
 //   それ以外    public/ の静的ファイルを配信。HTML には、閲覧者の国（data-country）と、
 //               開発中の固定言語（data-force-lang。FORCE_LANG が設定されているときだけ）を埋め込む
 //
-// 個人情報は保存しない：IP アドレスは IP_HASH_KEY を使った HMAC にしてから保存し、元の値はどこにも残さない。
+// 名前・メールアドレス・IP アドレスそのものは保存しない：IP アドレスは IP_HASH_KEY を使った HMAC にしてから保存し、元の値はどこにも残さない。
 // 書き出し時は PUBLISH_HASH_KEY でさらにハッシュし直す（研究データを公開しても、保存側の値と突き合わせられない）。
 
 import trackerSource from "./tracker.client.js";

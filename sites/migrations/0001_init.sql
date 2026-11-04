@@ -1,5 +1,5 @@
 -- 全コインのサイトで共有する閲覧イベントのテーブル
--- 個人情報は保存しない：IP アドレスは秘密鍵つき HMAC の先頭16桁（visitor）にしてから保存し、元の値は残さない
+-- 名前・メールアドレス・IP アドレスそのものは保存しない：IP アドレスは秘密鍵つき HMAC の先頭16桁（visitor）にしてから保存し、元の値は残さない
 CREATE TABLE events (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   site        TEXT    NOT NULL,           -- コイン名（wrangler.jsonc の SITE）
