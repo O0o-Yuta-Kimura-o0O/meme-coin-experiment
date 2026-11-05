@@ -6,6 +6,9 @@
     "dev:seppuku": "wrangler dev --config seppuku/wrangler.jsonc",
     "deploy:seppuku": "node scripts/check-release.mjs seppuku && wrangler deploy --config seppuku/wrangler.jsonc",
     "deploy:seppuku-preview": "node scripts/check-release.mjs seppuku --env preview && wrangler deploy --config seppuku/wrangler.jsonc --env preview",
+    "dev:mikeneko": "wrangler dev --config mikeneko/wrangler.jsonc",
+    "deploy:mikeneko": "node scripts/check-release.mjs mikeneko && wrangler deploy --config mikeneko/wrangler.jsonc",
+    "deploy:mikeneko-preview": "node scripts/check-release.mjs mikeneko --env preview && wrangler deploy --config mikeneko/wrangler.jsonc --env preview",
     "db:migrate:local": "wrangler d1 migrations apply meme-analytics --local --config seppuku/wrangler.jsonc",
     "db:migrate:remote": "wrangler d1 migrations apply meme-analytics --remote --config seppuku/wrangler.jsonc"
   },

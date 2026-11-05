@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MIKENEKO COIN — A coin for a cat</title>
+  <meta name="description" content="MIKENEKO COIN ($MIKENEKO): a conceptual meme coin (cryptocurrency) on Base about Koban-chan, a calico cat who found a gold coin and has no idea what it is worth.">
+  <meta property="og:title" content="MIKENEKO COIN — A coin for a cat">
+  <meta property="og:description" content="Koban-chan found a gold coin. She has no idea what it is worth. She loves it anyway.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mikeneko-site.meme-coin-sites.workers.dev/">
+  <meta property="og:image" content="https://mikeneko-site.meme-coin-sites.workers.dev/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#ffe6f0">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" as="image" href="kobanchan.webp">
+  <link rel="stylesheet" href="style.css">
+  <script src="/x/s.js" defer></script>
+</head>
+<body>
+  <!--
+    多言語化: data-i18n="キー" の要素は i18n.js の辞書で中身を差し替える。
+    日本語のときだけ、コイン名を「三毛猫コイン」と表示する（正式名は MIKENEKO COIN のまま、併記する）。
+    ストーリーは仮（2026-11-03）。決まったら i18n.js の story_* を書き換える。
+  -->
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="MIKENEKO COIN home">
+      <img src="kobanchan-s.webp" alt="" width="34" height="34">
+      <span data-i18n="brand">MIKENEKO COIN</span>
+    </a>
+    <nav>
+      <a href="#story" data-i18n="nav_story">Story</a>
+      <a href="#coin" data-i18n="nav_coin">The coin</a>
+      <a href="#buy" data-i18n="nav_buy">How to get</a>
+    </nav>
+    <label class="lang">
+      <span class="sr-only" data-i18n="lang_label">Language</span>
+      <select id="lang-select" data-track="lang_select"></select>
+    </label>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-coins" aria-hidden="true">
+        <img src="coin.webp" alt="" class="fc fc1" data-depth="0.35">
+        <img src="coin.webp" alt="" class="fc fc2" data-depth="0.6">
+        <img src="coin.webp" alt="" class="fc fc3" data-depth="0.2">
+      </div>
+      <div class="hero-text">
+        <p class="eyebrow"><span data-i18n="eyebrow">a conceptual meme coin (cryptocurrency) on Base</span></p>
+        <h1>
+          <span class="title" data-i18n="title">MIKENEKO COIN</span>
+          <span class="title-sub" data-i18n="title_sub">$MIKENEKO</span>
+        </h1>
+        <p class="tagline" data-i18n="tagline">A coin for a cat</p>
+        <div class="cta">
+          <!-- Uniswap のスワップ画面（scripts/set-launch.mjs で設定） -->
+          <a class="btn primary" href="https://app.uniswap.org/swap?chain=base&amp;inputCurrency=NATIVE&amp;outputCurrency=0xdE608429DAf918725F0d480c4209d9Dc05A46C77" target="_blank" rel="noopener" data-track="cta_buy" data-i18n="cta_buy_live">Acquire on Uniswap</a>
+          <a class="btn" href="#story" data-track="cta_story" data-i18n="cta_story">Read the story</a>
+        </div>
+      </div>
+      <figure class="hero-cat">
+        <img src="kobanchan.webp" alt="Koban-chan, a round calico cat, sits with a gold coin balanced on her head." width="900" height="942" fetchpriority="high">
+      </figure>
+      <svg class="ribbon" viewBox="0 0 400 120" aria-hidden="true">
+        <path d="M200 60 C150 10 90 10 92 48 C94 80 150 80 200 60 Z" />
+        <path d="M200 60 C250 10 310 10 308 48 C306 80 250 80 200 60 Z" />
+        <path class="tail" d="M196 66 L160 116 L178 112 L188 120 L200 70 Z" />
+        <path class="tail" d="M204 66 L240 116 L222 112 L212 120 L200 70 Z" />
+        <ellipse cx="200" cy="62" rx="16" ry="14" />
+      </svg>
+    </section>
+
+    <!-- 公式のコントラクトアドレス。似た名前のトークン（別物）があるので、目立つ場所にはっきり載せる -->
+    <section class="ca-card" aria-labelledby="ca-title">
+      <p class="ca-title" id="ca-title" data-i18n="ca_title">Official contract address</p>
+      <div class="ca">
+        <span class="ca-net">Base</span>
+        <!-- 本番のトークン（scripts/set-launch.mjs で設定） -->
+        <code id="ca" data-address="0xdE608429DAf918725F0d480c4209d9Dc05A46C77"><a href="https://basescan.org/token/0xdE608429DAf918725F0d480c4209d9Dc05A46C77" target="_blank" rel="noopener" data-track="ca_explorer">0xdE60…6C77</a></code>
+        <button type="button" id="copy-ca" data-track="copy_address" data-i18n="copy" disabled>Copy</button>
+      </div>
+      <p class="ca-note" data-i18n="ca_note">This is the only MIKENEKO COIN. Other tokens with similar names are not ours — always check the address.</p>
+    </section>
+
+    <section id="story" class="section story">
+      <p class="label"><span data-i18n="story_label">Story</span> <span class="paw" aria-hidden="true"></span></p>
+      <h2 data-i18n="story_title">Koban-chan and the gold coin</h2>
+
+      <div class="chapter">
+        <p class="lead" data-i18n="story1">Koban-chan is a round calico cat who lives with Kato-san.</p>
+        <p data-i18n="story2">One sunny afternoon, she found something on the road: a small gold coin with a cat's face on it. She did not know what it was. But it was round, it was shiny, and it was warm from the sun. So she brought it home.</p>
+      </div>
+
+      <blockquote class="proverb">
+        <p class="big" data-i18n="proverb">A coin for a cat</p>
+        <p class="small" data-i18n="proverb_note">The Japanese saying <i>neko ni koban</i> — “gold coins to a cat” — means giving something precious to someone who cannot tell its worth.</p>
+      </blockquote>
+
+      <div class="chapter">
+        <p data-i18n="story3">“Koban-chan, you can't buy anything with that,” Kato-san laughed. Koban-chan did not care. She balanced the coin on her head and walked around the house, very proudly.</p>
+      </div>
+
+      <figure class="art swim" data-parallax>
+        <img src="swim.webp" alt="Koban-chan swims underwater, paws outstretched, reaching for a gold coin." width="1536" height="1024" loading="lazy">
+        <div class="bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </figure>
+
+      <div class="chapter">
+        <p data-i18n="story4">One day the coin slipped and fell into deep, blue water. Koban-chan jumped in after it without thinking. A cat, swimming! She caught it with both paws.</p>
+      </div>
+
+      <figure class="art cart">
+        <img src="cart.webp" alt="Koban-chan rides in a pink shopping cart with a bow on it, the gold coin on her head." width="820" height="1019" loading="lazy">
+      </figure>
+
+      <div class="chapter">
+        <p data-i18n="story5">On Saturdays, Koban-chan rides in Kato-san's shopping cart. The shop is full of things a coin can buy. Koban-chan never buys anything. She would rather keep the coin.</p>
+        <p class="lead soft" data-i18n="story6">Who decides what something is worth? To Koban-chan, it is round, shiny and warm. That is enough.</p>
+      </div>
+
+      <!-- だれでもコインをつくれる時代に、価値を考えさせる結び（問いかけずに情景で） -->
+      <div class="question">
+        <img src="coin.webp" alt="" class="q-coin" width="150" height="160" loading="lazy">
+        <p data-i18n="story7">Today, anyone can make a coin. MIKENEKO COIN was born that way, too.</p>
+        <p data-i18n="story7b">Today, as always, Koban-chan is napping with the coin on her head. How much it is worth, she does not know.</p>
+        <p class="q-big" data-i18n="story8">A coin for a cat.</p>
+      </div>
+    </section>
+
+    <section id="coin" class="section coin">
+      <p class="label"><span data-i18n="coin_label">The coin</span> <span class="paw" aria-hidden="true"></span></p>
+      <h2 data-i18n="coin_title">How the coin works</h2>
+      <div class="cards">
+        <div class="card"><b class="num">1,000,000,000</b><span data-i18n="def_supply">tokens, minted once. No further mint exists.</span></div>
+        <div class="card pink"><b class="num">90%</b><span data-i18n="def_liq">liquidity — placed in the trading pool and <b>locked forever</b>. No one, not even the team, can take it out.</span></div>
+        <div class="card mint"><b class="num">5%</b><span data-i18n="def_team">team — <b>unlocked little by little, by halving</b>: half after 90 days, then half of the rest every 180 days.</span></div>
+        <div class="card lav"><b class="num">5%</b><span data-i18n="def_comm">community</span></div>
+        <div class="card sky wide"><b class="num">0%</b><span data-i18n="def_tax"><b>No token tax.</b> The coin adds nothing on top of trades (the DEX's 1% pool fee and network gas still apply). No owner, no pause, no blacklist. The contract cannot be changed by anyone.</span></div>
+      </div>
+
+      <h3 data-i18n="halving_title">Team unlock, by halving</h3>
+      <ol class="halving">
+        <li style="--p:50%"><span data-i18n-day="90">day 90</span><b>50%</b></li>
+        <li style="--p:75%"><span data-i18n-day="270">day 270</span><b>75%</b></li>
+        <li style="--p:87.5%"><span data-i18n-day="450">day 450</span><b>87.5%</b></li>
+        <li style="--p:93.75%"><span data-i18n-day="630">day 630</span><b>93.75%</b></li>
+        <li style="--p:96.875%"><span data-i18n-day="810">day 810</span><b>96.9%</b></li>
+        <li style="--p:100%"><span data-i18n-day="1350">day 1350</span><b>100%</b></li>
+      </ol>
+    </section>
+
+    <section id="buy" class="section buy">
+      <p class="label"><span data-i18n="buy_label">How to get</span> <span class="paw" aria-hidden="true"></span></p>
+      <ol class="steps">
+        <li data-i18n="step1"><b>A wallet.</b> Coinbase Wallet, MetaMask, Rabby — anything that supports Base.</li>
+        <li data-i18n="step2"><b>ETH on Base.</b> Withdraw from an exchange to the Base network, or bridge from Ethereum.</li>
+        <li data-i18n="step3"><b>A swap on Uniswap.</b> Paste the official contract address above, and check that it matches this page. Imitations exist.</li>
+      </ol>
+    </section>
+
+    <section id="experiment" class="section experiment">
+      <p class="label"><span data-i18n="exp_label">Experiment</span> <span class="paw" aria-hidden="true"></span></p>
+      <p data-i18n="experiment">MIKENEKO COIN is also part of an open research project on how <strong>differences between coins</strong> — such as their names, stories and the way they are run — shape meme coin markets. Market data, social metrics and anonymized site analytics are recorded and will be published. We do not store names, email addresses or IP addresses themselves, and we do not use cookies.</p>
+    </section>
+
+    <section class="section remark">
+      <p data-i18n="remark">MIKENEKO COIN is a meme coin with no intrinsic value and no expectation of financial return. There is no promise, roadmap or profit sharing, and its price can go to zero. Nothing here is investment advice. Only spend what you can afford to lose, and follow the laws of where you live.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <img src="coin.webp" alt="" width="40" height="43">
+    <a href="privacy.html" data-i18n="privacy">Privacy</a>
+    <span class="credit">© 2026 Team MIKENEKO</span>
+  </footer>
+
+  <!-- 画面の中を動き回るキャラクター（飾り。motion.js が動かす） -->
+  <div class="sprites" aria-hidden="true">
+    <img class="sprite-cart" src="cart-s.webp" alt="" width="200" height="248">
+    <img class="sprite-hop" src="kobanchan-s.webp" alt="" width="220" height="230">
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="motion.js"></script>
+  <script>
+    const ca = document.getElementById("ca");
+    const btn = document.getElementById("copy-ca");
+    if (ca.dataset.address) {
+      btn.disabled = false;
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(ca.dataset.address);
+          btn.textContent = window.skT ? skT("copied") : "Copied";
+          setTimeout(() => (btn.textContent = window.skT ? skT("copy") : "Copy"), 1500);
+        } catch {}
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "token_address": "0xdE608429DAf918725F0d480c4209d9Dc05A46C77",
+  "site_url": "https://mikeneko-site.meme-coin-sites.workers.dev",
+  "x": {
+    "username": "",
+    "query": "\"MIKENEKO\" (coin OR token) -is:retweet"
+  },
+  "youtube": {
+    "channel_id": "",
+    "query": "MIKENEKO coin"
+  },
+  "instagram": {
+    "username": "",
+    "user_id": "",
+    "hashtag": "mikenekocoin"
+  }
+}

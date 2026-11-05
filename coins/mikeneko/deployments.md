@@ -1,0 +1,5 @@
+# デプロイ記録
+
+| 日時 (JST) | ネットワーク | Token | HalvingVesting（受取人ごと） | Pool / LP NFT | 備考 |
+|---|---|---|---|---|---|
+| 2026-11-05 11:02 | **Base（本番）** | [0xdE608429DAf918725F0d480c4209d9Dc05A46C77](https://basescan.org/address/0xdE608429DAf918725F0d480c4209d9Dc05A46C77) | 木村: [0x22e2…1d2C](https://basescan.org/address/0x22e2573CeD6EFB74479A379F7072665fa2ad1d2C) / 鳥間: [0x5821…A00a](https://basescan.org/address/0x582138dCe65A397d4812d2201AE39C063e2AA00a) | Pool [0xd20A…75D3](https://basescan.org/address/0xd20A5BCe29e2051b0C71b4eF281AcCB0974a75D3)（11:05 作成）/ 永久ロック [0x3Bbf…4188](https://basescan.org/address/0x3BbfbB4937ba2244063Dbd3c309c0A1E3b1F4188) / LP NFT #6467720（木村）・#6467719（鳥間） | **本番**。片側流動性、FDV 10 ETH、ETH 0、LP は永久ロック。4 件とも Sourcify で検証済み（exact match）。LP NFT の番号が送信の直前に他人の発行で 1 つずれたため、スクリプト内のロックへの送信 1 件が失敗し、2 つ目（#6467720）は 11:07 に手動でロックへ送った（[tx](https://basescan.org/tx/0x7b4651ff949d0a72ed9b0ec51bd130d7725ddaf6190a8924a9102665dd254237)）。2 つは同じ価格帯・同じ流動性。半減期の最初の解放 2027-02-03 11:01 JST（以後 180 日ごと、8 回）。ガス代 計 約 0.000045 ETH |

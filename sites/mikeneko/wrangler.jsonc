@@ -1,0 +1,60 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "mikeneko-site",
+  "main": "../shared/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // "/" と "/index.html" は Worker を通し、言語の自動選択用のヒントを HTML に埋め込む
+    "run_worker_first": ["/x/*", "/", "/index.html"],
+    "not_found_handling": "404-page"
+  },
+  "rules": [{ "type": "Text", "globs": ["**/*.client.js"], "fallthrough": false }],
+  "vars": {
+    "SITE": "mikeneko"
+    // 言語を固定して確認したいときは "FORCE_LANG": "ja" を足す（残したままだと npm run deploy:mikeneko が止まる）
+  },
+  // 全コインのサイトで1つのデータベースを共有する（site 列で区別）
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "meme-analytics",
+      "database_id": "881aa04d-15fb-499d-9ad0-8b835361a48b",
+      "migrations_dir": "../migrations"
+    }
+  ],
+  "observability": { "enabled": true },
+
+  // ---------- プレビュー版（友だちに見てもらう用） ----------
+  // npm run deploy:mikeneko-preview で公開。本番とは別の Worker（mikeneko-preview）になる。
+  // vars と d1_databases は環境ごとに書く必要がある（本番の設定は引き継がれない）。
+  "env": {
+    "preview": {
+      "name": "mikeneko-preview",
+      "assets": {
+        "directory": "./public",
+        "binding": "ASSETS",
+        // すべてのリクエストを Worker に通し、検索エンジン避けのヘッダーを付ける
+        "run_worker_first": true,
+        "not_found_handling": "404-page"
+      },
+      "vars": {
+        // 閲覧データは本番と分けて記録する（site 列が mikeneko-preview になる）
+        "SITE": "mikeneko-preview",
+        // 検索エンジンに載せない（X-Robots-Tag、meta robots、robots.txt）
+        "NOINDEX": "true"
+        // 日本語固定（FORCE_LANG）は付けない：国に合わせた言語の自動選択を確認するため
+        // 合言葉をかけたいときは `npx wrangler secret put PREVIEW_PASSWORD --env preview --config mikeneko/wrangler.jsonc`
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "meme-analytics",
+          "database_id": "881aa04d-15fb-499d-9ad0-8b835361a48b",
+          "migrations_dir": "../migrations"
+        }
+      ]
+    }
+  }
+}

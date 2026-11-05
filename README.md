@@ -11,7 +11,8 @@
 
 | コイン | ティッカー | 発行枚数 | 配分（流動性 / チーム / コミュニティ） | 半減期（クリフ / 間隔 / 回数） | 状態 | フォルダ |
 |---|---|---|---|---|---|---|
-| SEPPUKU COIN | $SEPPUKU | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 準備中 | [coins/seppuku](coins/seppuku) |
+| SEPPUKU COIN | $SEPPUKU | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 稼働中（2026-11-02〜） | [coins/seppuku](coins/seppuku) |
+| MIKENEKO COIN（三毛猫コイン） | $MIKENEKO | 10億 | 90 / 5 / 5 | 90日 / 180日 / 8回 | 稼働中（2026-11-05〜） | [coins/mikeneko](coins/mikeneko) |
 
 仕様の違い（発行枚数・配分・半減期）は、すべて各コインの `coin.env` で設定します。コントラクトのコードは全コイン共通です。
 
