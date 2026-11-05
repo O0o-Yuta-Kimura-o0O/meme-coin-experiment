@@ -2,9 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {VmSafe} from "forge-std/Vm.sol";
-import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {PermanentLPLock} from "../src/PermanentLPLock.sol";
+import {LockedLPMinter, IPositionManagerMint} from "../src/LockedLPMinter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
@@ -13,10 +12,7 @@ interface IUniswapV3Factory {
 }
 
 interface IUniswapV3Pool {
-    function slot0()
-        external
-        view
-        returns (uint160 sqrtPriceX96, int24 tick, uint16, uint16, uint16, uint8, bool);
+    function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16, uint16, uint16, uint8, bool);
 }
 
 interface INonfungiblePositionManager {
@@ -57,7 +53,7 @@ interface IWETH is IERC20 {
 ///         どちらも、誰かが先に別の価格でプールを作っていた場合（先回り攻撃）は中止する。
 ///         受取人（LP_RECIPIENTS、カンマ区切り）が複数なら、量を人数で均等に分け、同じ価格帯のポジション（NFT）を
 ///         人数分作る。量と価格帯が同じなので、買い手が払う ETH も取引手数料も、取引のたびに均等に分かれてたまる。
-///         LP_LOCK=permanent（既定）なら、作ったポジションをそのまま PermanentLPLock に預けて永久にロックし、
+///         LP_LOCK=permanent（既定）なら、作ったポジションを同じ取引の中で PermanentLPLock に預けて永久にロックし（LockedLPMinter 経由。NFT の番号のずれが起きない）、
 ///         受取人は手数料だけを受け取れる（元本は誰も引き出せない）。LP_LOCK=none ならポジションを受取人に直接渡す。
 ///         設定値は deploy.sh と同じく coins/<コイン名>/coin.env から add-liquidity.sh 経由で渡される。
 contract AddLiquidity is Script {
@@ -122,6 +118,7 @@ contract AddLiquidity is Script {
         if (r.lock != address(0)) console2.log("Permanent lock :", r.lock);
         for (uint256 i; i < r.tokenIds.length; i++) {
             console2.log("LP NFT (simulated id):", r.tokenIds[i], "-> fee recipient", recipients[i]);
+            // 実際の番号は送信時に決まる（ロックは mint と同じ取引で行うので、番号がずれても正しくロックされる）
         }
         console2.log("Token used     :", r.tokenUsed / 1e18);
         console2.log("ETH used (wei) :", r.ethUsed);
@@ -141,15 +138,18 @@ contract AddLiquidity is Script {
         return total / n + (i == 0 ? total % n : 0);
     }
 
-    /// @notice ポジションを 1 つ作り、結果を r の i 番目に書き込む
+    /// @notice ポジションを 1 つ作り、結果を r の i 番目に書き込む。
+    ///         minter があれば、mint と永久ロックを同じ取引で行う（受取人 = m.recipient）
     function _mintInto(
         Result memory r,
         uint256 i,
         INonfungiblePositionManager pm,
+        LockedLPMinter minter,
         INonfungiblePositionManager.MintParams memory m,
         bool tokenIs0
     ) internal {
-        (uint256 id, uint128 liq, uint256 used0, uint256 used1) = pm.mint(m);
+        (uint256 id, uint128 liq, uint256 used0, uint256 used1) =
+            address(minter) == address(0) ? pm.mint(m) : minter.mintLocked(_asMinterParams(m), m.recipient);
         r.tokenIds[i] = id;
         r.liquidities[i] = liq;
         r.tokenUsed += tokenIs0 ? used0 : used1;
@@ -170,9 +170,7 @@ contract AddLiquidity is Script {
     function addSingleSided(SingleSided memory p) public returns (Result memory r) {
         require(p.tokenAmount > 0, "amount must be > 0");
         require(p.recipients.length > 0, "no LP recipients");
-        require(
-            p.tickLower < p.tickUpper && p.tickLower % 200 == 0 && p.tickUpper % 200 == 0, "bad tick range"
-        );
+        require(p.tickLower < p.tickUpper && p.tickLower % 200 == 0 && p.tickUpper % 200 == 0, "bad tick range");
         Uniswap memory u = uniswapFor(block.chainid);
         bool tokenIs0 = p.token < WETH;
         (address token0, address token1) = tokenIs0 ? (p.token, WETH) : (WETH, p.token);
@@ -184,45 +182,58 @@ contract AddLiquidity is Script {
         (, int24 tick,,,,,) = IUniswapV3Pool(r.pool).slot0();
         require(tokenIs0 ? tick < p.tickLower : tick >= p.tickUpper, "range must be on the token side of the price");
 
-        IERC20(p.token).approve(address(u.positionManager), p.tokenAmount);
-        address holder = p.permanentLock ? _holder() : address(0);
-        _mintSingleSidedAll(r, u.positionManager, p, Pair(token0, token1, 0, 0, tokenIs0), holder);
-        if (p.permanentLock) _lockAll(r, u.positionManager, holder, p.recipients);
+        LockedLPMinter minter = p.permanentLock ? _newLock(r, u.positionManager) : LockedLPMinter(address(0));
+        IERC20(p.token).approve(_spender(u.positionManager, minter), p.tokenAmount);
+        _mintSingleSidedAll(r, u.positionManager, minter, p, Pair(token0, token1, 0, 0, tokenIs0));
     }
 
     function _mintSingleSidedAll(
         Result memory r,
         INonfungiblePositionManager pm,
+        LockedLPMinter minter,
         SingleSided memory p,
-        Pair memory q,
-        address holder
+        Pair memory q
     ) internal {
         uint256 n = p.recipients.length;
         r.tokenIds = new uint256[](n);
         r.liquidities = new uint128[](n);
         for (uint256 i; i < n; i++) {
-            address to = holder == address(0) ? p.recipients[i] : holder;
-            _mintInto(r, i, pm, _singleSidedMint(p, _share(p.tokenAmount, n, i), to, q), q.tokenIs0);
+            _mintInto(
+                r, i, pm, minter, _singleSidedMint(p, _share(p.tokenAmount, n, i), p.recipients[i], q), q.tokenIs0
+            );
         }
     }
 
-    /// @notice ポジションを作った本人（broadcast 中は送信するウォレット、テストではこのコントラクト）
-    function _holder() internal returns (address) {
-        (VmSafe.CallerMode mode, address sender,) = vm.readCallers();
-        return mode == VmSafe.CallerMode.Broadcast || mode == VmSafe.CallerMode.RecurrentBroadcast
-            ? sender
-            : address(this);
-    }
-
-    /// @notice 永久ロックを作り、ポジションをすべて預ける。i 番目の手数料の受取人は beneficiaries[i]
-    function _lockAll(Result memory r, INonfungiblePositionManager pm, address holder, address[] memory beneficiaries)
-        internal
-    {
+    /// @notice 永久ロックと、mint からロックまでを 1 つの取引で行う LockedLPMinter を作る
+    function _newLock(Result memory r, INonfungiblePositionManager pm) internal returns (LockedLPMinter) {
         PermanentLPLock lock = new PermanentLPLock(address(pm));
         r.lock = address(lock);
-        for (uint256 i; i < r.tokenIds.length; i++) {
-            IERC721(address(pm)).safeTransferFrom(holder, address(lock), r.tokenIds[i], abi.encode(beneficiaries[i]));
-        }
+        return new LockedLPMinter(address(pm), address(lock));
+    }
+
+    /// @notice トークンを approve する相手（ロックするなら LockedLPMinter、しないなら Uniswap）
+    function _spender(INonfungiblePositionManager pm, LockedLPMinter minter) internal pure returns (address) {
+        return address(minter) == address(0) ? address(pm) : address(minter);
+    }
+
+    function _asMinterParams(INonfungiblePositionManager.MintParams memory m)
+        internal
+        pure
+        returns (IPositionManagerMint.MintParams memory)
+    {
+        return IPositionManagerMint.MintParams(
+            m.token0,
+            m.token1,
+            m.fee,
+            m.tickLower,
+            m.tickUpper,
+            m.amount0Desired,
+            m.amount1Desired,
+            m.amount0Min,
+            m.amount1Min,
+            m.recipient,
+            m.deadline
+        );
     }
 
     function _singleSidedMint(SingleSided memory p, uint256 amount, address recipient, Pair memory q)
@@ -285,20 +296,19 @@ contract AddLiquidity is Script {
         _checkNotFrontRun(u, q.token0, q.token1, sqrtPriceX96);
         r.pool = u.positionManager.createAndInitializePoolIfNecessary(q.token0, q.token1, FEE, sqrtPriceX96);
 
+        LockedLPMinter minter = permanentLock ? _newLock(r, u.positionManager) : LockedLPMinter(address(0));
         IWETH(WETH).deposit{value: ethAmount}();
-        IERC20(WETH).approve(address(u.positionManager), ethAmount);
-        IERC20(token).approve(address(u.positionManager), tokenAmount);
-        address holder = permanentLock ? _holder() : address(0);
-        _mintFullRangeAll(r, u.positionManager, q, recipients, holder);
-        if (permanentLock) _lockAll(r, u.positionManager, holder, recipients);
+        IERC20(WETH).approve(_spender(u.positionManager, minter), ethAmount);
+        IERC20(token).approve(_spender(u.positionManager, minter), tokenAmount);
+        _mintFullRangeAll(r, u.positionManager, minter, q, recipients);
     }
 
     function _mintFullRangeAll(
         Result memory r,
         INonfungiblePositionManager pm,
+        LockedLPMinter minter,
         Pair memory q,
-        address[] memory recipients,
-        address holder
+        address[] memory recipients
     ) internal {
         uint256 n = recipients.length;
         r.tokenIds = new uint256[](n);
@@ -308,13 +318,8 @@ contract AddLiquidity is Script {
                 r,
                 i,
                 pm,
-                _fullRangeMint(
-                    q.token0,
-                    q.token1,
-                    _share(q.amount0, n, i),
-                    _share(q.amount1, n, i),
-                    holder == address(0) ? recipients[i] : holder
-                ),
+                minter,
+                _fullRangeMint(q.token0, q.token1, _share(q.amount0, n, i), _share(q.amount1, n, i), recipients[i]),
                 q.tokenIs0
             );
         }
