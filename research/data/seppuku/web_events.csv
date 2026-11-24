@@ -53,3 +53,7 @@ id,received_at,event_at,elapsed_ms,session_id,visitor,country,device,os,browser,
 1383,2026-11-04T06:53:34.113Z,2026-11-04T06:53:34.109Z,187153,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":171924}"
 1384,2026-11-04T06:55:30.907Z,2026-11-04T06:55:28.515Z,276368,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,visible,/,,
 1385,2026-11-04T06:55:30.907Z,2026-11-04T06:55:30.907Z,278761,108ba4a1-b7ff-4b76-96ea-ab215b95c85d,46451ae5fd4621b9,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":174316}"
+1445,2026-11-24T13:58:11.003Z,2026-11-24T13:57:56.001Z,1,c836a3de-07da-46e1-81b8-7755e1170418,62fc5fbc46b90ea8,JP,mobile,ios,other,x,view,/,t.co,"{""lang"":""ja"",""page_lang"":""ja"",""w"":375}"
+1446,2026-11-24T13:58:11.003Z,2026-11-24T13:58:01.654Z,5653,c836a3de-07da-46e1-81b8-7755e1170418,62fc5fbc46b90ea8,JP,mobile,ios,other,x,scroll,/,,"{""pct"":25}"
+1447,2026-11-24T13:58:11.003Z,2026-11-24T13:58:07.113Z,11113,c836a3de-07da-46e1-81b8-7755e1170418,62fc5fbc46b90ea8,JP,mobile,ios,other,x,scroll,/,,"{""pct"":50}"
+1448,2026-11-24T13:58:17.531Z,2026-11-24T13:58:17.531Z,21481,c836a3de-07da-46e1-81b8-7755e1170418,62fc5fbc46b90ea8,JP,mobile,ios,other,x,hidden,/,,"{""visible_ms"":21480}"
